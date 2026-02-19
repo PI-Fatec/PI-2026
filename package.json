@@ -1,0 +1,14 @@
+{
+  "name": "servicedesk-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:types": "npm -w @servicedesk/types run build",
+    "dev:web": "npm -w web run dev",
+    "dev:desktop": "npm -w desktop run dev",
+    "dev:mobile": "npm -w mobile run start"
+  }
+}
