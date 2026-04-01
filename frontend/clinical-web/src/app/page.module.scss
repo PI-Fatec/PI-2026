@@ -1,0 +1,87 @@
+﻿.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f7f9fc; // Fundo clareado semelhante ao app
+  color: #171717;
+  text-align: center;
+  padding: 24px;
+}
+
+// ==== ESTILOS DO LOADING ====
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(17, 129, 139, 0.2); // Verde do logo transparent
+  border-bottom-color: #11818B; // Verde do logo
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+  margin-bottom: 24px;
+}
+
+.loadingText {
+  font-size: 1.1rem;
+  color: #0b2d6a;
+  font-weight: 600;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+// ==== ESTILOS DO NOT-FOUND ====
+.icon {
+  color: #0b2d6a; // Azul do tema
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 5rem;
+  font-weight: 800;
+  color: #0b2d6a;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.description {
+  font-size: 1rem;
+  color: #666;
+  max-width: 400px;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.button {
+  display: inline-block;
+  background-color: #11346b;
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(11, 45, 106, 0.2);
+
+  &:hover {
+    background-color: #0a2550;
+    transform: translateY(-2px);
+  }
+}

@@ -1,0 +1,52 @@
+
+
+$blue-deep:    #0d1b2a; 
+$blue-primary: #1a3a5f;
+$blue-accent:  #4cc9f0; 
+$blue-button:  #003366; 
+
+$white:        #ffffff;
+$bg-light:     #f8f9fa; 
+$input-bg:     #e9ecef; 
+$border-light: #dee2e6;
+$text-main:    #333333; 
+$text-muted:   #6c757d; 
+$text-white:   #ffffff;
+
+$success:      #28a745;
+$error:        #dc3545;
+$warning:      #ffc107;
+
+
+$font-main:    'Inter', sans-serif; 
+$radius-lg:    12px;                
+$radius-md:    8px;
+$shadow-sm:    0 2px 4px rgba(0, 0, 0, 0.05);
+$transition:   0.3s ease-in-out;
+$mt-lg: 24px;
+$mt-md: 16px;
+$mt-sm: 8px;
+$mb-lg: 24px;
+$mb-md: 16px;
+$mb-sm: 8px;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin tablet {
+  @media (max-width: 992px) { @content; }
+}
+
+@mixin mobile {
+  @media (max-width: 768px) { @content; }
+}
+
+@mixin glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: $radius-lg;
+}

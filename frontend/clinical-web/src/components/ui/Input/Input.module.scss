@@ -1,0 +1,66 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-main;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  background-color: $input-bg; 
+  border: 1px solid transparent;
+  border-radius: $radius-lg;
+  padding: 0 16px;
+  transition: all $transition;
+
+  &:focus-within {
+    background-color: $white;
+    border-color: $blue-primary;
+    box-shadow: 0 0 0 4px rgba($blue-primary, 0.1);
+    
+    .icon {
+      color: $blue-primary;
+    }
+  }
+
+  &.hasError {
+    border-color: $error;
+    background-color: rgba($error, 0.05);
+  }
+}
+
+.icon {
+  color: $text-muted;
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: color $transition;
+}
+
+.inputField {
+  flex: 1;
+  height: 52px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: $text-main;
+
+  &::placeholder {
+    color: $text-muted;
+    opacity: 0.7;
+  }
+}
+
+.errorMessage {
+  font-size: 0.75rem;
+  color: $error;
+  margin-top: 4px;
+}
