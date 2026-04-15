@@ -1,0 +1,175 @@
+.sidebar {
+	width: 300px;
+	min-height: 100vh;
+	background: #1E4B82;
+	color: #f4f8ff;
+	padding: 24px 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.mobileHeader {
+	display: none;
+	align-items: center;
+	justify-content: space-between;
+
+	strong {
+		font-size: 0.86rem;
+		text-transform: uppercase;
+		letter-spacing: 0.7px;
+		color: rgba(244, 248, 255, 0.9);
+	}
+}
+
+.closeButton {
+	width: 30px;
+	height: 30px;
+	border: none;
+	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.brandBlock { 
+	display: flex;
+	align-items: center;
+	gap: 12px;
+
+	h1 {
+		font-size: 1.1rem;
+		line-height: 1.2;
+		font-weight: 700;
+	}
+
+	p {
+		margin-top: 2px;
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		color: rgba(244, 248, 255, 0.85);
+	}
+}
+
+.logoBadge {
+	width: 38px;
+	height: 38px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.15);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.profileCard {
+	background: rgba(255, 255, 255, 0.12);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 12px;
+	padding: 12px;
+
+	small {
+		display: block;
+		margin-top: 6px;
+		font-size: 0.78rem;
+		color: rgba(244, 248, 255, 0.9);
+	}
+}
+
+.profileHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+
+	span {
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+}
+
+.menu {
+	h2 {
+		font-size: 0.82rem;
+		text-transform: uppercase;
+		letter-spacing: 0.8px;
+		margin-bottom: 10px;
+		color: rgba(244, 248, 255, 0.9);
+	}
+
+	ul {
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	li {
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.09);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		padding: 9px 10px;
+		font-size: 0.84rem;
+		font-weight: 500;
+	}
+}
+
+.quickStatus {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+
+	div {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		font-size: 0.8rem;
+		color: rgba(244, 248, 255, 0.92);
+	}
+}
+
+.logoutButton {
+	margin-top: auto;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	border-radius: 10px;
+	background: rgba(10, 23, 48, 0.2);
+	color: #ffffff;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 11px 14px;
+	font-size: 0.9rem;
+	font-weight: 600;
+
+	&:hover {
+		background: rgba(10, 23, 48, 0.35);
+	}
+}
+
+@media (max-width: 960px) {
+	.sidebar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 100vh;
+		max-width: 280px;
+		width: 85vw;
+		min-height: 100vh;
+		z-index: 60;
+		transform: translateX(-100%);
+		transition: transform $transition;
+	}
+
+	.sidebar.open {
+		transform: translateX(0);
+	}
+
+	.mobileHeader {
+		display: flex;
+	}
+}

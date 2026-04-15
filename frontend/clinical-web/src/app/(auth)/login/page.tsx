@@ -2,20 +2,48 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Shield, Lock, ArrowRight, Eye, EyeOff, IdCard } from 'lucide-react';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
+import { useAuth } from '@/hooks/useAuth';
 import styles from './login.module.scss';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberSession, setRememberSession] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
+
+    if (!identifier.trim() || !password.trim()) {
+      setErrorMessage('Preencha identificacao e senha para continuar.');
+      return;
+    }
+
     setIsLoading(true);
-    // Aqui entrará sua lógica de autenticação com a API
-    setTimeout(() => setIsLoading(false), 2000); 
+
+    try {
+      await login({
+        identifier,
+        password,
+        remember: rememberSession,
+      });
+
+      router.replace('/');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Nao foi possivel autenticar.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,8 +70,10 @@ export default function LoginPage() {
           label="CRM / E-mail" 
           placeholder="Digite seu CRM ou e-mail" 
           icon={IdCard} 
+          value={identifier}
+          onChange={(event) => setIdentifier(event.target.value)}
+          error={errorMessage ? ' ' : undefined}
           required 
-          
         />
 
         <div className={styles.passwordWrapper}>
@@ -55,6 +85,9 @@ export default function LoginPage() {
             type={showPassword ? 'text' : 'password'} 
             placeholder="••••••••" 
             icon={Lock} 
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            error={errorMessage ? ' ' : undefined}
             required 
           />
           <button 
@@ -67,8 +100,21 @@ export default function LoginPage() {
         </div>
 
         <div className={styles.checkboxGroup}>
-          <input type="checkbox" id="remember" />
+          <input
+            type="checkbox"
+            id="remember"
+            checked={rememberSession}
+            onChange={(event) => setRememberSession(event.target.checked)}
+          />
           <label htmlFor="remember">Manter sessão ativa por 12 horas</label>
+        </div>
+
+        {errorMessage && <p className={styles.submitError}>{errorMessage}</p>}
+
+        <div className={styles.mockCredentials}>
+          <p>Modo mock para testes:</p>
+          <span>Medico: medico@test.com ou CRM12345 / 123456</span>
+          <span>Administrador: admin@test.com / 123456</span>
         </div>
 
         <Button type="submit" variant='primary' icon={ArrowRight} isLoading={isLoading}>

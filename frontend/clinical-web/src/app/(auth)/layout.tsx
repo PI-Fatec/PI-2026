@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import { BrainCircuit } from 'lucide-react';
 import styles from './auth.module.scss';
 import type { Metadata } from "next";

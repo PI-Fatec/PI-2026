@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 const publicRoutes = ['/login', '/cadastro', '/404', '/recuperar-senha'];
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
@@ -22,13 +22,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Aplica o middleware em todas as rotas, exceto:
-     * - api (rotas de API)
-     * - _next/static (arquivos estáticos servidos pelo next)
-     * - _next/image (arquivos de imagem)
-     * - favicon.ico e arquivos de configuração
-     */
+ 
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -17,6 +17,11 @@ $success:      #28a745;
 $error:        #dc3545;
 $warning:      #ffc107;
 
+$gray-100:     #f1f3f5;
+$gray-200:     #e9ecef;
+$gray-300:     #dee2e6;
+$gray-400:     #ced4da;
+
 
 $font-main:    'Inter', sans-serif; 
 $radius-lg:    12px;                
@@ -29,6 +34,8 @@ $mt-sm: 8px;
 $mb-lg: 24px;
 $mb-md: 16px;
 $mb-sm: 8px;
+
+
 
 @mixin flex-center {
   display: flex;
