@@ -1,0 +1,98 @@
+.wizard {
+  width: 100%;
+
+  ol {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: $text-muted;
+
+  &.active {
+    color: #0f447a;
+
+    .badge {
+      background: #0f447a;
+      color: #fff;
+      box-shadow: 0 6px 12px rgba(15, 68, 122, 0.2);
+    }
+
+    .line {
+      border-top-color: rgba(15, 68, 122, 0.45);
+    }
+  }
+
+  &.completed {
+    color: #1f7a35;
+
+    .badge {
+      background: #9bd86c;
+      color: #0d3b16;
+    }
+
+    .line {
+      border-top-color: rgba(31, 122, 53, 0.35);
+    }
+  }
+}
+
+.stepButton {
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+.badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.line {
+  flex: 1;
+  border-top: 2px solid #d1d5db;
+  min-width: 24px;
+}
+
+@include mobile {
+  .wizard {
+    overflow-x: auto;
+
+    ol {
+      min-width: 660px;
+    }
+  }
+}

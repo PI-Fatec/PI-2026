@@ -95,6 +95,10 @@
   background: $error;
 }
 
+.profileWrapper {
+  position: relative;
+}
+
 .profile {
   margin-left: 6px;
   padding-left: 14px;
@@ -102,6 +106,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 
   strong {
     display: block;
@@ -115,6 +122,41 @@
     margin-top: 2px;
     color: $text-muted;
     font-size: 0.78rem;
+  }
+}
+
+.profileMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  border-radius: 12px;
+  border: 1px solid $border-light;
+  background: $white;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  button {
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: $text-main;
+    font-size: 0.86rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    cursor: pointer;
+
+    &:hover {
+      background: $gray-100;
+      color: $blue-primary;
+    }
   }
 }
 

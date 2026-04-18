@@ -1,0 +1,59 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.56);
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 760px);
+  max-height: calc(100vh - 36px);
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #d9e2ec;
+  background: #ffffff;
+  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.24);
+}
+
+.header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf2f7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  h2 {
+    color: #0f447a;
+    font-size: 1.1rem;
+  }
+
+  button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #d4deea;
+    background: #f8fafc;
+    color: #0f447a;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.content {
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding: 16px;
+}

@@ -23,9 +23,9 @@ const recentPatients = [
 ];
 
 const riskLabel = {
-  high: 'High Risk',
-  medium: 'Medium Risk',
-  low: 'Low Risk',
+  high: 'Risco Alto',
+  medium: 'Risco Médio',
+  low: 'Risco Baixo',
 } as const;
 
 const riskClassByLevel = {
@@ -53,6 +53,10 @@ export default function Home() {
     setVisiblePatients((current) => Math.min(current + 4, recentPatients.length));
   };
 
+  const handleGoToPatientRegistration = () => {
+    router.push('/pacientes/cadastro');
+  };
+
   return (
     <div className={styles.shell}>
       <Sidebar
@@ -70,6 +74,7 @@ export default function Home() {
           userName={session?.name ?? 'Ricardo Silva'}
           role={role}
           onMenuClick={() => setIsSidebarOpen(true)}
+          onLogout={handleLogout}
         />
 
         <div className={styles.contentArea}>
@@ -104,7 +109,7 @@ export default function Home() {
             <article className={styles.panel}>
               <header className={styles.patientsHeader}>
                 <h2>Pacientes Recentes</h2>
-                <button type="button">Adicionar Paciente</button>
+                <button type="button" onClick={handleGoToPatientRegistration}>Adicionar Paciente</button>
               </header>
 
               <table className={styles.table}>
@@ -138,14 +143,15 @@ export default function Home() {
               </table>
 
               <div className={styles.patientsFooter}>
-                <button
-                  type="button"
-                  className={styles.loadMoreButton}
-                  onClick={handleLoadMorePatients}
-                  disabled={!hasMorePatients}
-                >
-                  {hasMorePatients ? 'Carregar mais pacientes' : 'Todos os pacientes carregados'}
-                </button>
+                {hasMorePatients && (
+                  <button
+                    type="button"
+                    className={styles.loadMoreButton}
+                    onClick={handleLoadMorePatients}
+                  >
+                    Carregar mais pacientes
+                  </button>
+                )}
               </div>
             </article>
 

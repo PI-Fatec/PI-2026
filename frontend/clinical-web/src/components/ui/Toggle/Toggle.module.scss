@@ -1,0 +1,60 @@
+.card {
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f4f6fa;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+
+  strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #0d3b66;
+  }
+
+  p {
+    margin-top: 4px;
+    font-size: 0.76rem;
+    color: #64748b;
+  }
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch {
+  width: 42px;
+  height: 24px;
+  border-radius: 999px;
+  background: #cbd5e1;
+  position: relative;
+  transition: background-color $transition;
+  flex-shrink: 0;
+}
+
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+  transition: transform $transition;
+}
+
+.checked {
+  background: #8ace57;
+
+  .knob {
+    transform: translateX(18px);
+  }
+}

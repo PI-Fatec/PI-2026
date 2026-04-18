@@ -1,0 +1,57 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: grid;
+  place-items: center;
+  z-index: 120;
+  padding: 16px;
+}
+
+.dialog {
+  width: min(100%, 460px);
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.2);
+  padding: 18px;
+
+  h2 {
+    color: #0f447a;
+    font-size: 1.15rem;
+  }
+
+  p {
+    margin-top: 8px;
+    color: #475569;
+    line-height: 1.45;
+  }
+
+  footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}
+
+.cancelButton,
+.confirmButton {
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancelButton {
+  border: 1px solid #d4deea;
+  background: #f8fafc;
+  color: #0f447a;
+}
+
+.confirmButton {
+  border: none;
+  background: #b42318;
+  color: #ffffff;
+}

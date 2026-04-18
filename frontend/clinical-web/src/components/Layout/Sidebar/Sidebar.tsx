@@ -1,4 +1,8 @@
-import { ShieldCheck, Activity, Users, AlertTriangle, LogOut, UserRound, X } from 'lucide-react';
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ShieldCheck, LayoutDashboard, Users, ActivitySquare, FileSearch, LogOut, X, UserCog } from 'lucide-react';
 import { UserRole } from '@/types/auth';
 import styles from './sidebar.module.scss';
 
@@ -10,17 +14,33 @@ interface SidebarProps {
 	onClose?: () => void;
 }
 
-const roleLabel: Record<UserRole, string> = {
-	ADMIN: 'Administrador',
-	DOCTOR: 'Medico',
+const roleItems: Record<UserRole, Array<{ label: string; href: string; icon: React.ElementType }>> = {
+	ADMIN: [
+		{ label: 'Dashboard', href: '/', icon: LayoutDashboard },
+		{ label: 'Cadastrar paciente', href: '/pacientes/cadastro', icon: Users },
+		{ label: 'Gerenciar pacientes', href: '/pacientes/gerenciamento', icon: FileSearch },
+		{ label: 'Controle de medicos', href: '/admin/medicos', icon: UserCog },
+		{ label: 'Relatorios IA', href: '/dashboard', icon: ActivitySquare },
+	],
+	DOCTOR: [
+		{ label: 'Dashboard', href: '/', icon: LayoutDashboard },
+		{ label: 'Cadastrar paciente', href: '/pacientes/cadastro', icon: Users },
+		{ label: 'Gerenciar pacientes', href: '/pacientes/gerenciamento', icon: FileSearch },
+		{ label: 'Alertas clinicos', href: '/dashboard', icon: ActivitySquare },
+	],
 };
 
-const roleItems: Record<UserRole, string[]> = {
-	ADMIN: ['Gerenciar usuarios', 'Monitorar sistema', 'Auditoria de acessos'],
-	DOCTOR: ['Consultar pacientes', 'Analisar risco', 'Alertas clinicos'],
-};
+export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProps) => {
+	const pathname = usePathname();
 
-export const Sidebar = ({ role, userName, onLogout, isOpen = false, onClose }: SidebarProps) => {
+	const isActive = (href: string) => {
+		if (href === '/') {
+			return pathname === '/';
+		}
+
+		return pathname === href || pathname.startsWith(`${href}/`);
+	};
+
 	return (
 		<aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
 			<div className={styles.mobileHeader}>
@@ -40,13 +60,18 @@ export const Sidebar = ({ role, userName, onLogout, isOpen = false, onClose }: S
 				</div>
 			</div>
 
+		
+
 			
 
 			<nav className={styles.menu} aria-label="Menu principal">
 				<ul>
 					{roleItems[role].map((item) => (
-						<li key={item}>
-							<span>{item}</span>
+						<li key={item.href}>
+							<Link href={item.href} className={`${styles.menuLink} ${isActive(item.href) ? styles.active : ''}`}>
+								<item.icon size={16} />
+								<span>{item.label}</span>
+							</Link>
 						</li>
 					))}
 				</ul>
