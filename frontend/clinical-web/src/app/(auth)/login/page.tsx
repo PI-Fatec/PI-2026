@@ -7,7 +7,12 @@ import { Shield, Lock, ArrowRight, Eye, EyeOff, IdCard } from 'lucide-react';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { useAuth } from '@/hooks/useAuth';
+import { Metadata } from "next";
+import Image from 'next/image';
+import  logo  from '@/assets/logo.png';
 import styles from './login.module.scss';
+
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,13 +55,8 @@ export default function LoginPage() {
     <div className={styles.wrapper}>
       <header className={styles.header}>
         <div className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <Shield className={styles.shieldIcon} size={24} color="#fff" strokeWidth={2.5}/>
-          </div>
-          <div>
-            <h1>HealthTrack AI</h1>
-            <span>CLINICAL INTELLIGENCE</span>
-          </div>
+          <Image src={logo} alt="HealthTrack AI" />
+         
         </div>
       </header>
 

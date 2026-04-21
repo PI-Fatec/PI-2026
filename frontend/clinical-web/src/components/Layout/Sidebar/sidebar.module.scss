@@ -55,15 +55,15 @@
 	}
 }
 
-.logoBadge {
-	width: 38px;
-	height: 38px;
-	border-radius: 10px;
-	background: rgba(255, 255, 255, 0.15);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	border: 1px solid rgba(255, 255, 255, 0.25);
+.logoImageWrap {
+	width: 44px;
+	flex-shrink: 0;
+
+	img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
 }
 
 .profileCard {

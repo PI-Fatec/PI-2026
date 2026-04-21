@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ShieldCheck, LayoutDashboard, Users, ActivitySquare, FileSearch, LogOut, X, UserCog } from 'lucide-react';
+import { LayoutDashboard, Users, ActivitySquare, FileSearch, LogOut, X, UserCog } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import { UserRole } from '@/types/auth';
 import styles from './sidebar.module.scss';
 
@@ -51,8 +53,8 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 			</div>
 
 			<div className={styles.brandBlock}>
-				<div className={styles.logoBadge}>
-					<ShieldCheck size={20} />
+				<div className={styles.logoImageWrap}>
+					<Image src={logo} alt="HealthTrack AI" priority />
 				</div>
 				<div>
 					<h1>HealthTrack AI</h1>

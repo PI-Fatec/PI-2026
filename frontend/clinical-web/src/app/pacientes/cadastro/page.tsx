@@ -1,12 +1,14 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Rocket, CircleCheck } from 'lucide-react';
 import { Header } from '@/components/Layout/Header/Header';
 import { Sidebar } from '@/components/Layout/Sidebar/Sidebar';
 import { Toggle } from '@/components/ui/Toggle/Toggle';
 import { Wizard } from '@/components/ui/Wizard/Wizard';
+import logo from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { usePatients } from '@/hooks/usePatients';
 import { HealthOverallStatus, NewPatientInput } from '@/types/patient';
@@ -211,6 +213,9 @@ export default function CadastroPacientePage() {
         <Header userName={session?.name ?? 'Ricardo Silva'} role={role} onMenuClick={() => setIsSidebarOpen(true)} onLogout={handleLogout} />
 
         <section className={styles.pageHeader}>
+          <div className={styles.logoWrap}>
+            <Image src={logo} alt="HealthTrack AI" priority />
+          </div>
           <h1>Novo Paciente</h1>
           <p>Siga o assistente para gerar a analise preditiva por IA.</p>
         </section>
@@ -469,16 +474,7 @@ export default function CadastroPacientePage() {
           </form>
         </section>
 
-        <section className={styles.aiInsightCard}>
-          <div className={styles.avatar}>AI</div>
-          <div>
-            <strong>Por que estes dados sao importantes?</strong>
-            <p>
-              Nossa IA cruza estes dados comportamentais com estatisticas do CDC para prever riscos de doencas
-              cronicas com ate 94% de precisao antes mesmo de sintomas clinicos aparecerem.
-            </p>
-          </div>
-        </section>
+     
       </main>
     </div>
   );

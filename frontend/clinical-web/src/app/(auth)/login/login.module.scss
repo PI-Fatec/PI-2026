@@ -7,50 +7,16 @@
   margin: 0 auto;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  
-  .logoIcon {
-    width: 44px;
-    height: 44px;
-    background-color: #0b2d6a; // Azul marinho
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    // O escudo azul já tem um preenchimento na imagem, podemos usar um SVG ou estilizar
-    position: relative;
-    overflow: hidden;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 20px;
-      height: 20px;
-      background: #11818B; // Detalhe verde/teal do logo
-      border-radius: 50% 0 0 0;
-      opacity: 0.9;
-    }
-  }
+.logo{
+  width: 90%;
+  max-width: 300px;
+  height: auto;
+  margin: 0 auto;
 
-  h1 {
-    font-size: 1.5rem;
-    color: #0b2d6a;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: -0.5px;
-  }
-
-  span {
-    font-size: 0.65rem;
-    letter-spacing: 1.5px;
-    color: #11818B;
-    font-weight: 700;
-    text-transform: uppercase;
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
   }
 }
 
