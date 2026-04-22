@@ -25,7 +25,7 @@ export default function RegisterScreen() {
     try {
       setIsSubmitting(true);
       const mockToken = `token_${Date.now()}`;
-      await signIn(mockToken);
+      await signIn(mockToken, name.trim());
       router.replace('/main');
     } finally {
       setIsSubmitting(false);

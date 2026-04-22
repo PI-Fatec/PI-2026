@@ -66,7 +66,7 @@ export function OnboardingStepScreen({
               disabled={isLoading}
               className="h-14 w-full items-center justify-center rounded-full bg-[#2D8DE8]">
               <Text className="text-lg font-semibold text-white">
-                {isLoading ? 'Solicitando...' : buttonLabel}
+                {isLoading ? 'Carregando...' : buttonLabel}
               </Text>
             </Pressable>
           </View>

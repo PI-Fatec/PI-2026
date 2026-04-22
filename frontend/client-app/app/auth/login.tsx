@@ -24,7 +24,8 @@ export default function LoginScreen() {
     try {
       setIsSubmitting(true);
       const mockToken = `token_${Date.now()}`;
-      await signIn(mockToken);
+      const fallbackName = email.includes('@') ? email.split('@')[0] : email;
+      await signIn(mockToken, fallbackName);
       router.replace('/main');
     } finally {
       setIsSubmitting(false);

@@ -1,7 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
+import { BottomMenu } from '@/components/main/bottom-menu';
+import { HealthRecordsProvider } from '@/providers/health-records-provider';
 import { useSession } from '@/providers/session-provider';
 
 export default function MainLayout() {
@@ -24,31 +25,43 @@ export default function MainLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#2D8DE8',
-        tabBarInactiveTintColor: '#8C8C8C',
-        tabBarStyle: {
-          height: 64,
-          paddingTop: 8,
-          paddingBottom: 8,
-        },
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
-        }}
-      />
-    </Tabs>
+    <HealthRecordsProvider>
+      <Tabs
+        tabBar={(props) => <BottomMenu {...props} />}
+        screenOptions={{
+          headerShown: false,
+        }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+          }}
+        />
+        <Tabs.Screen
+          name="dashboard"
+          options={{
+            title: 'Dashboard',
+          }}
+        />
+        <Tabs.Screen
+          name="history"
+          options={{
+            title: 'Historico',
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Perfil',
+          }}
+        />
+        <Tabs.Screen
+          name="add-info"
+          options={{
+            href: null,
+          }}
+        />
+      </Tabs>
+    </HealthRecordsProvider>
   );
 }

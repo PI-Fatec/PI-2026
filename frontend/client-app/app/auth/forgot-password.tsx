@@ -37,7 +37,7 @@ export default function ForgotPasswordScreen() {
             <Pressable
               onPress={() => router.replace('/auth/login')}
               className="h-8 w-8 items-center justify-center rounded-full bg-[#2D8DE8]">
-              <Ionicons name="arrow-up" size={16} color="#FFFFFF" />
+              <Ionicons name="arrow-left" size={16} color="#FFFFFF" />
             </Pressable>
           </View>
 
