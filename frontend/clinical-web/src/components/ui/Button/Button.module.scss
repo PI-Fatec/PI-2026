@@ -1,0 +1,72 @@
+.button {
+  @include flex-center;
+  gap: 12px;
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: $radius-lg;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition;
+  padding: 0 24px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .icon {
+    transition: transform $transition;
+  }
+
+  &:hover:not(:disabled) {
+    .icon {
+      transform: translateX(4px); // Efeito de movimento na seta
+    }
+  }
+}
+
+.primary {
+  background-color: $blue-button;
+  color: $white;
+
+  &:hover:not(:disabled) {
+    background-color: lighten($blue-button, 5%);
+    box-shadow: 0 4px 12px rgba($blue-button, 0.2);
+  }
+}
+
+.secondary {
+  background-color: $input-bg;
+  color: $text-main;
+
+  &:hover:not(:disabled) {
+    background-color: darken($input-bg, 5%);
+  }
+}
+
+.outline {
+  background-color: transparent;
+  border: 1px solid $border-light;
+  color: $text-muted;
+
+  &:hover:not(:disabled) {
+    border-color: $blue-accent;
+    color: $blue-accent;
+  }
+}
+
+// Spinner simples para o estado de loading
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba($white, 0.3);
+  border-radius: 50%;
+  border-top-color: $white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

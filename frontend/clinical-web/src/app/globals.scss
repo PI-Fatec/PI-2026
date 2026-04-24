@@ -1,0 +1,38 @@
+:root {
+  --color-blue-deep: #{$blue-deep};
+  --color-blue-primary: #{$blue-primary};
+  --color-blue-accent: #{$blue-accent};
+  --color-blue-button: #{$blue-button};
+
+  --color-white: #{$white};
+  --color-bg-light: #{$bg-light};
+  --color-input-bg: #{$input-bg};
+  --color-border-light: #{$border-light};
+  --color-text-main: #{$text-main};
+  --color-text-muted: #{$text-muted};
+
+  --color-success: #{$success};
+  --color-error: #{$error};
+  --color-warning: #{$warning};
+
+  --color-gray-100: #{$gray-100};
+  --color-gray-200: #{$gray-200};
+  --color-gray-300: #{$gray-300};
+  --color-gray-400: #{$gray-400};
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-inter), sans-serif;
+  color: #171717;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
