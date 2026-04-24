@@ -30,6 +30,9 @@ const roleItems: Record<UserRole, Array<{ label: string; href: string; icon: Rea
 		{ label: 'Gerenciar pacientes', href: '/pacientes/gerenciamento', icon: FileSearch },
 		{ label: 'Alertas clinicos', href: '/dashboard', icon: ActivitySquare },
 	],
+	PATIENT: [
+		{ label: 'Dashboard', href: '/', icon: LayoutDashboard },
+	],
 };
 
 export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProps) => {
@@ -62,10 +65,6 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 				</div>
 			</div>
 
-		
-
-			
-
 			<nav className={styles.menu} aria-label="Menu principal">
 				<ul>
 					{roleItems[role].map((item) => (
@@ -79,7 +78,6 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 				</ul>
 			</nav>
 
-		
 			<button type="button" className={styles.logoutButton} onClick={onLogout}>
 				<LogOut size={16} />
 				Sair

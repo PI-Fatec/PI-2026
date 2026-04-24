@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { mockDoctorService } from '@/services/mockDoctorService';
+import { doctorApi } from '@/services/doctorApi';
 import { Doctor, DoctorFilters, NewDoctorInput, UpdateDoctorInput } from '@/types/doctor';
+import { useAuth } from '@/hooks/useAuth';
 
 const initialFilters: DoctorFilters = {
   busca: '',
@@ -11,26 +12,36 @@ const initialFilters: DoctorFilters = {
 };
 
 export const useDoctors = () => {
+  const { session } = useAuth();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [filters, setFilters] = useState<DoctorFilters>(initialFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadDoctors = useCallback(async (currentFilters: DoctorFilters) => {
-    setIsLoading(true);
-    setError(null);
+  const loadDoctors = useCallback(
+    async (currentFilters: DoctorFilters) => {
+      if (!session?.token) {
+        setDoctors([]);
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      const list = await mockDoctorService.list(currentFilters);
-      setDoctors(list);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Falha ao carregar medicos.';
-      setError(message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const list = await doctorApi.list(currentFilters, session.token);
+        setDoctors(list);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Falha ao carregar medicos.';
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [session?.token],
+  );
 
   useEffect(() => {
     void loadDoctors(filters);
@@ -38,31 +49,39 @@ export const useDoctors = () => {
 
   const createDoctor = useCallback(
     async (payload: NewDoctorInput) => {
+      if (!session?.token) {
+        throw new Error('Sessao expirada. Faca login novamente.');
+      }
+
       setIsSaving(true);
       setError(null);
 
       try {
-        const created = await mockDoctorService.create(payload);
+        const created = await doctorApi.invite(payload, session.token);
         await loadDoctors(filters);
         return created;
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Nao foi possivel cadastrar medico.';
+        const message = err instanceof Error ? err.message : 'Nao foi possivel convidar medico.';
         setError(message);
         throw err;
       } finally {
         setIsSaving(false);
       }
     },
-    [filters, loadDoctors],
+    [filters, loadDoctors, session?.token],
   );
 
   const updateDoctor = useCallback(
     async (id: string, payload: UpdateDoctorInput) => {
+      if (!session?.token) {
+        throw new Error('Sessao expirada. Faca login novamente.');
+      }
+
       setIsSaving(true);
       setError(null);
 
       try {
-        const updated = await mockDoctorService.update(id, payload);
+        const updated = await doctorApi.update(id, payload, session.token);
         await loadDoctors(filters);
         return updated;
       } catch (err) {
@@ -73,16 +92,20 @@ export const useDoctors = () => {
         setIsSaving(false);
       }
     },
-    [filters, loadDoctors],
+    [filters, loadDoctors, session?.token],
   );
 
   const removeDoctor = useCallback(
     async (id: string) => {
+      if (!session?.token) {
+        throw new Error('Sessao expirada. Faca login novamente.');
+      }
+
       setIsSaving(true);
       setError(null);
 
       try {
-        await mockDoctorService.remove(id);
+        await doctorApi.remove(id, session.token);
         await loadDoctors(filters);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Nao foi possivel remover medico.';
@@ -92,7 +115,7 @@ export const useDoctors = () => {
         setIsSaving(false);
       }
     },
-    [filters, loadDoctors],
+    [filters, loadDoctors, session?.token],
   );
 
   const mergeFilters = useCallback((partial: Partial<DoctorFilters>) => {

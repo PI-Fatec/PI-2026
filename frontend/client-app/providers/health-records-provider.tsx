@@ -1,19 +1,8 @@
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 
-export type HealthRecordType =
-  | 'glicemia'
-  | 'pressao_arterial'
-  | 'alimentacao'
-  | 'exame'
-  | 'prontuario'
-  | 'predicao_risco';
-
-type HealthRecordTypeMeta = {
-  value: HealthRecordType;
-  label: string;
-  unit: string;
-  placeholder: string;
-};
+import { recordsApi } from '@/lib/records-api';
+import { useSession } from '@/providers/session-provider';
+import { HealthRecord, HealthRecordType, HealthRecordTypeMeta, UpsertHealthRecordInput } from '@/types/record';
 
 export const HEALTH_RECORD_TYPE_OPTIONS: HealthRecordTypeMeta[] = [
   { value: 'glicemia', label: 'Glicemia', unit: 'mg/dL', placeholder: 'Ex: 110' },
@@ -24,102 +13,65 @@ export const HEALTH_RECORD_TYPE_OPTIONS: HealthRecordTypeMeta[] = [
   { value: 'predicao_risco', label: 'Predicao de risco', unit: '%', placeholder: 'Ex: 72' },
 ];
 
-export type HealthRecord = {
-  id: string;
-  type: HealthRecordType;
-  value: number;
-  unit: string;
-  notes: string;
-  recordedAt: string;
-};
-
-type UpsertHealthRecordInput = {
-  type: HealthRecordType;
-  value: number;
-  unit: string;
-  notes: string;
-  recordedAt: string;
-};
-
 type HealthRecordsContextValue = {
   records: HealthRecord[];
-  addRecord: (input: UpsertHealthRecordInput) => void;
-  updateRecord: (id: string, input: UpsertHealthRecordInput) => void;
-  deleteRecord: (id: string) => void;
+  isLoading: boolean;
+  addRecord: (input: UpsertHealthRecordInput) => Promise<void>;
+  updateRecord: (id: string, input: UpsertHealthRecordInput) => Promise<void>;
+  deleteRecord: (id: string) => Promise<void>;
   getRecordById: (id: string) => HealthRecord | undefined;
+  reloadRecords: () => Promise<void>;
 };
-
-const initialRecords: HealthRecord[] = [
-  {
-    id: 'r1',
-    type: 'glicemia',
-    value: 190,
-    unit: 'mg/dL',
-    notes: 'Antes do cafe da manha',
-    recordedAt: '2026-04-22T10:00:00.000Z',
-  },
-  {
-    id: 'r2',
-    type: 'glicemia',
-    value: 305,
-    unit: 'mg/dL',
-    notes: 'Apos almoco',
-    recordedAt: '2026-04-22T12:00:00.000Z',
-  },
-  {
-    id: 'r3',
-    type: 'pressao_arterial',
-    value: 125,
-    unit: 'mmHg',
-    notes: 'Pressao apos caminhada leve',
-    recordedAt: '2026-04-22T15:00:00.000Z',
-  },
-  {
-    id: 'r4',
-    type: 'alimentacao',
-    value: 640,
-    unit: 'kcal',
-    notes: 'Almoco com carboidratos moderados',
-    recordedAt: '2026-04-22T17:00:00.000Z',
-  },
-];
 
 const HealthRecordsContext = createContext<HealthRecordsContextValue | null>(null);
 
 export function HealthRecordsProvider({ children }: PropsWithChildren) {
-  const [records, setRecords] = useState<HealthRecord[]>(initialRecords);
+  const { token } = useSession();
+  const [records, setRecords] = useState<HealthRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const reloadRecords = async () => {
+    if (!token) {
+      setRecords([]);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await recordsApi.list(token);
+      setRecords(response);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void reloadRecords();
+  }, [token]);
 
   const value = useMemo<HealthRecordsContextValue>(
     () => ({
-      records: [...records].sort(
-        (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
-      ),
-      addRecord: (input) => {
-        setRecords((current) => [
-          ...current,
-          {
-            id: `r${Date.now()}`,
-            ...input,
-          },
-        ]);
+      records: [...records].sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()),
+      isLoading,
+      addRecord: async (input) => {
+        if (!token) return;
+        const created = await recordsApi.create(token, input);
+        setRecords((current) => [created, ...current]);
       },
-      updateRecord: (id, input) => {
-        setRecords((current) =>
-          current.map((record) => {
-            if (record.id !== id) {
-              return record;
-            }
-
-            return { ...record, ...input };
-          })
-        );
+      updateRecord: async (id, input) => {
+        if (!token) return;
+        const updated = await recordsApi.update(token, id, input);
+        setRecords((current) => current.map((record) => (record.id === id ? updated : record)));
       },
-      deleteRecord: (id) => {
+      deleteRecord: async (id) => {
+        if (!token) return;
+        await recordsApi.remove(token, id);
         setRecords((current) => current.filter((record) => record.id !== id));
       },
       getRecordById: (id) => records.find((record) => record.id === id),
+      reloadRecords,
     }),
-    [records]
+    [isLoading, records, token]
   );
 
   return <HealthRecordsContext.Provider value={value}>{children}</HealthRecordsContext.Provider>;
@@ -136,8 +88,7 @@ export function useHealthRecords() {
 }
 
 export function getRecordTypeMeta(type: HealthRecordType): HealthRecordTypeMeta {
-  return (
-    HEALTH_RECORD_TYPE_OPTIONS.find((option) => option.value === type) ?? HEALTH_RECORD_TYPE_OPTIONS[0]
-  );
+  return HEALTH_RECORD_TYPE_OPTIONS.find((option) => option.value === type) ?? HEALTH_RECORD_TYPE_OPTIONS[0];
 }
 
+export type { HealthRecord, HealthRecordType, UpsertHealthRecordInput };

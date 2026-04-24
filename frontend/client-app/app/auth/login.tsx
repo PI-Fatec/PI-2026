@@ -10,23 +10,23 @@ import { useSession } from '@/providers/session-provider';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn } = useSession();
+  const { signInWithCredentials } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Campos obrigatórios', 'Preencha email e senha para entrar.');
+      Alert.alert('Campos obrigatorios', 'Preencha email/CRM e senha para entrar.');
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const mockToken = `token_${Date.now()}`;
-      const fallbackName = email.includes('@') ? email.split('@')[0] : email;
-      await signIn(mockToken, fallbackName);
+      await signInWithCredentials(email.trim(), password);
       router.replace('/main');
+    } catch (error) {
+      Alert.alert('Falha no login', error instanceof Error ? error.message : 'Nao foi possivel autenticar.');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +50,7 @@ export default function LoginScreen() {
             <AuthTextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="Email"
+              placeholder="Email ou CRM"
               keyboardType="email-address"
               autoCapitalize="none"
             />

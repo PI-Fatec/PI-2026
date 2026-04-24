@@ -188,7 +188,7 @@ export default function CadastroPacientePage() {
         imc: imcValue,
       });
 
-      setSuccessMessage('Paciente salvo com sucesso. Redirecionando para gerenciamento...');
+      setSuccessMessage('Convite enviado ao cliente com sucesso. Redirecionando para gerenciamento...');
       setHasTriedCurrentStep(false);
       setStepError(null);
       setTimeout(() => router.push('/pacientes/gerenciamento'), 900);

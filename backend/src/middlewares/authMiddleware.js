@@ -1,17 +1,37 @@
-const jwt = require('jsonwebtoken');
+const { verifyAuthToken } = require('../services/tokenService');
 
-module.exports = (req, res, next) => {
+function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader) return res.status(401).json({ error: "Token não fornecido" });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token nao fornecido.' });
+  }
 
-  const [, token] = authHeader.split(' ');
+  const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.userId;
+    req.auth = verifyAuthToken(token);
     return next();
-  } catch (err) {
-    return res.status(401).json({ error: "Token inválido" });
+  } catch (error) {
+    return res.status(401).json({ error: 'Token invalido ou expirado.' });
   }
+}
+
+function requireRoles(...roles) {
+  return (req, res, next) => {
+    if (!req.auth) {
+      return res.status(401).json({ error: 'Nao autenticado.' });
+    }
+
+    if (!roles.includes(req.auth.role)) {
+      return res.status(403).json({ error: 'Sem permissao para esta operacao.' });
+    }
+
+    return next();
+  };
+}
+
+module.exports = {
+  requireAuth,
+  requireRoles,
 };

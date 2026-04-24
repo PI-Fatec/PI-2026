@@ -109,7 +109,7 @@ export default function AdminMedicosPage() {
         setFeedback('Medico atualizado com sucesso.');
       } else {
         await createDoctor(doctorForm);
-        setFeedback('Medico cadastrado com sucesso.');
+        setFeedback('Convite enviado ao medico com sucesso.');
       }
 
       closeDoctorModal();

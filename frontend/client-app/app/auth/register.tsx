@@ -10,10 +10,13 @@ import { useSession } from '@/providers/session-provider';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { signIn } = useSession();
+  const { registerSelf } = useSession();
+  const [role, setRole] = useState<'PATIENT' | 'DOCTOR'>('PATIENT');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [crm, setCrm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegister = async () => {
@@ -22,11 +25,28 @@ export default function RegisterScreen() {
       return;
     }
 
+    if (role === 'PATIENT' && !cpf.trim()) {
+      Alert.alert('CPF obrigatorio', 'Informe o CPF para cadastro de cliente.');
+      return;
+    }
+
+    if (role === 'DOCTOR' && !crm.trim()) {
+      Alert.alert('CRM obrigatorio', 'Informe o CRM para cadastro de medico.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      const mockToken = `token_${Date.now()}`;
-      await signIn(mockToken, name.trim());
+      await registerSelf({
+        role,
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        ...(role === 'PATIENT' ? { cpf: cpf.trim() } : { crm: crm.trim() }),
+      });
       router.replace('/main');
+    } catch (error) {
+      Alert.alert('Falha no cadastro', error instanceof Error ? error.message : 'Nao foi possivel concluir o cadastro.');
     } finally {
       setIsSubmitting(false);
     }
@@ -46,7 +66,20 @@ export default function RegisterScreen() {
             <View className="h-8 w-8" />
           </View>
 
-          <View className="mt-12 gap-4">
+          <View className="mt-5 flex-row gap-2">
+            <Pressable
+              onPress={() => setRole('PATIENT')}
+              className={`flex-1 rounded-full px-4 py-2 ${role === 'PATIENT' ? 'bg-[#2D8DE8]' : 'bg-[#ECECEC]'}`}>
+              <Text className={`text-center font-semibold ${role === 'PATIENT' ? 'text-white' : 'text-[#1E1E1E]'}`}>Cliente</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setRole('DOCTOR')}
+              className={`flex-1 rounded-full px-4 py-2 ${role === 'DOCTOR' ? 'bg-[#2D8DE8]' : 'bg-[#ECECEC]'}`}>
+              <Text className={`text-center font-semibold ${role === 'DOCTOR' ? 'text-white' : 'text-[#1E1E1E]'}`}>Medico</Text>
+            </Pressable>
+          </View>
+
+          <View className="mt-6 gap-4">
             <AuthTextInput value={name} onChangeText={setName} placeholder="Nome" />
 
             <AuthTextInput
@@ -56,6 +89,12 @@ export default function RegisterScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
+
+            {role === 'PATIENT' ? (
+              <AuthTextInput value={cpf} onChangeText={setCpf} placeholder="CPF" autoCapitalize="none" />
+            ) : (
+              <AuthTextInput value={crm} onChangeText={setCrm} placeholder="CRM" autoCapitalize="characters" />
+            )}
 
             <AuthTextInput
               value={password}

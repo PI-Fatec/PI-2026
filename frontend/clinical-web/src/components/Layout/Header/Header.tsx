@@ -15,6 +15,7 @@ interface HeaderProps {
 const roleLabel: Record<UserRole, string> = {
   ADMIN: 'Administrador do Sistema',
   DOCTOR: 'Neurologista Clinica',
+  PATIENT: 'Cliente',
 };
 
 const getInitials = (name: string) =>

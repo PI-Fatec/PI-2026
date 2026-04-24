@@ -1,17 +1,55 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, type PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
+import { authApi, AppRole } from '@/lib/auth-api';
+
 const TOKEN_KEY = '@healthtrack:token';
 const ONBOARDING_KEY = '@healthtrack:onboarding-complete';
-const USER_NAME_KEY = '@healthtrack:user-name';
+const USER_KEY = '@healthtrack:user';
+
+type SessionUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: AppRole;
+};
 
 type SessionContextValue = {
   isLoading: boolean;
   hasOnboarded: boolean;
   token: string | null;
+  user: SessionUser | null;
   userName: string;
   completeOnboarding: () => Promise<void>;
-  signIn: (nextToken: string, nextUserName?: string) => Promise<void>;
+  signInWithCredentials: (identifier: string, password: string) => Promise<void>;
+  registerSelf: (payload: {
+    role: 'DOCTOR' | 'PATIENT';
+    name: string;
+    email: string;
+    password: string;
+    telefone?: string;
+    crm?: string;
+    especialidade?: string;
+    clinica?: string;
+    cpf?: string;
+    dataNascimento?: string;
+    sexo?: 'Masculino' | 'Feminino' | 'Outro';
+  }) => Promise<void>;
+  acceptInvite: (payload: {
+    token: string;
+    role: 'DOCTOR' | 'PATIENT';
+    email: string;
+    name: string;
+    password: string;
+    telefone?: string;
+    crm?: string;
+    especialidade?: string;
+    clinica?: string;
+    cpf?: string;
+    dataNascimento?: string;
+    sexo?: 'Masculino' | 'Feminino' | 'Outro';
+  }) => Promise<void>;
+  validateInvite: (token: string) => Promise<{ valid: boolean; role: 'DOCTOR' | 'PATIENT'; email: string; expiresAt: string }>;
   signOut: () => Promise<void>;
 };
 
@@ -19,21 +57,21 @@ const SessionContext = createContext<SessionContextValue | undefined>(undefined)
 
 export function SessionProvider({ children }: PropsWithChildren) {
   const [token, setToken] = useState<string | null>(null);
-  const [userName, setUserName] = useState('');
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [hasOnboarded, setHasOnboarded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadState = async () => {
       try {
-        const [storedToken, onboardingDone, storedUserName] = await Promise.all([
+        const [storedToken, onboardingDone, storedUser] = await Promise.all([
           AsyncStorage.getItem(TOKEN_KEY),
           AsyncStorage.getItem(ONBOARDING_KEY),
-          AsyncStorage.getItem(USER_NAME_KEY),
+          AsyncStorage.getItem(USER_KEY),
         ]);
 
         setToken(storedToken);
-        setUserName(storedUserName ?? '');
+        setUser(storedUser ? (JSON.parse(storedUser) as SessionUser) : null);
         setHasOnboarded(onboardingDone === 'true');
       } catch (error) {
         console.warn('Falha ao carregar sessao local.', error);
@@ -42,7 +80,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       }
     };
 
-    loadState();
+    void loadState();
   }, []);
 
   const completeOnboarding = async () => {
@@ -50,21 +88,58 @@ export function SessionProvider({ children }: PropsWithChildren) {
     await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
   };
 
-  const signIn = async (nextToken: string, nextUserName?: string) => {
-    const normalizedName = nextUserName?.trim() ?? userName;
+  const persistAuth = async (nextToken: string, nextUser: SessionUser) => {
     setToken(nextToken);
-    setUserName(normalizedName);
-    await Promise.all([
-      AsyncStorage.setItem(TOKEN_KEY, nextToken),
-      AsyncStorage.setItem(USER_NAME_KEY, normalizedName),
-    ]);
+    setUser(nextUser);
+    await Promise.all([AsyncStorage.setItem(TOKEN_KEY, nextToken), AsyncStorage.setItem(USER_KEY, JSON.stringify(nextUser))]);
+  };
+
+  const signInWithCredentials = async (identifier: string, password: string) => {
+    const payload = await authApi.login(identifier, password);
+    await persistAuth(payload.token, payload.user);
+  };
+
+  const registerSelf = async (payload: {
+    role: 'DOCTOR' | 'PATIENT';
+    name: string;
+    email: string;
+    password: string;
+    telefone?: string;
+    crm?: string;
+    especialidade?: string;
+    clinica?: string;
+    cpf?: string;
+    dataNascimento?: string;
+    sexo?: 'Masculino' | 'Feminino' | 'Outro';
+  }) => {
+    const response = await authApi.registerSelf(payload);
+    await persistAuth(response.token, response.user);
+  };
+
+  const validateInvite = async (inviteToken: string) => authApi.validateInvite(inviteToken);
+
+  const acceptInvite = async (payload: {
+    token: string;
+    role: 'DOCTOR' | 'PATIENT';
+    email: string;
+    name: string;
+    password: string;
+    telefone?: string;
+    crm?: string;
+    especialidade?: string;
+    clinica?: string;
+    cpf?: string;
+    dataNascimento?: string;
+    sexo?: 'Masculino' | 'Feminino' | 'Outro';
+  }) => {
+    const response = await authApi.acceptInvite(payload);
+    await persistAuth(response.token, response.user);
   };
 
   const signOut = async () => {
     setToken(null);
-    setUserName('');
-    await AsyncStorage.removeItem(TOKEN_KEY);
-    await AsyncStorage.removeItem(USER_NAME_KEY);
+    setUser(null);
+    await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
   };
 
   const value = useMemo(
@@ -72,12 +147,16 @@ export function SessionProvider({ children }: PropsWithChildren) {
       isLoading,
       hasOnboarded,
       token,
-      userName,
+      user,
+      userName: user?.name ?? '',
       completeOnboarding,
-      signIn,
+      signInWithCredentials,
+      registerSelf,
+      acceptInvite,
+      validateInvite,
       signOut,
     }),
-    [hasOnboarded, isLoading, token, userName]
+    [hasOnboarded, isLoading, token, user]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

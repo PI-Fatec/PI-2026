@@ -8,38 +8,147 @@ datasource db {
 }
 
 enum Role {
-  PATIENT
+  ADMIN
   DOCTOR
+  PATIENT
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum DoctorStatus {
+  ATIVO
+  INATIVO
+}
+
+enum PatientStatus {
+  ATIVO
+  INATIVO
+}
+
+enum Sex {
+  Masculino
+  Feminino
+  Outro
+}
+
+enum HealthOverallStatus {
+  MUITO_BOM
+  BOM
+  ATENCAO
+  CRITICO
+}
+
+enum RiskLevel {
+  ALTO
+  MEDIO
+  BAIXO
+}
+
+enum HealthRecordType {
+  glicemia
+  pressao_arterial
+  alimentacao
+  exame
+  prontuario
+  predicao_risco
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(PATIENT)
-  createdAt DateTime @default(now())
+  id              String         @id @default(uuid())
+  name            String
+  email           String         @unique
+  password        String
+  role            Role
+  accountStatus   AccountStatus  @default(PENDING)
+  isActive        Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  indicators HealthIndicator[]
+  doctorProfile   DoctorProfile?
+  patientProfile  PatientProfile?
+  sentInvites     InviteToken[]  @relation("InviteSender")
+  receivedInvites InviteToken[]  @relation("InviteReceiver")
+  healthRecords   HealthRecord[] @relation("PatientRecords")
 }
 
-model HealthIndicator {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  
-  // Dados do dataset BRFSS 2015 (Kaggle) simplificados
-  bmi             Float    // IMC
-  highBloodPress  Boolean  // Pressão alta
-  highChol        Boolean  // Colesterol alto
-  smoker          Boolean  // Fumante
-  physActivity    Boolean  // Atividade física
-  fruits          Boolean  // Consumo de frutas
-  veggies         Boolean  // Consumo de vegetais
-  
-  // Resposta da IA (Preenchido via RabbitMQ depois)
-  riskLevel       String?  // BAIXO, MEDIO, ALTO
-  clusterGroup    Int?     // Grupo comportamental (K-Means)
-  
-  createdAt       DateTime @default(now())
+model DoctorProfile {
+  id              String          @id @default(uuid())
+  userId          String          @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  telefone        String          @default("")
+  crm             String          @unique
+  especialidade   String          @default("")
+  clinica         String          @default("")
+  status          DoctorStatus    @default(ATIVO)
+  invitedPatients PatientProfile[] @relation("DoctorPatients")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model PatientProfile {
+  id                 String              @id @default(uuid())
+  userId             String              @unique
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cpf                String              @unique
+  dataNascimento     DateTime?
+  sexo               Sex                 @default(Outro)
+  telefone           String              @default("")
+  alturaCm           Float               @default(170)
+  pesoKg             Float               @default(70)
+  imc                Float               @default(24.2)
+  pressaoSistolica   Int                 @default(120)
+  pressaoDiastolica  Int                 @default(80)
+  glicemiaMgDl       Float               @default(96)
+  fumante            Boolean             @default(false)
+  atividadeFisica    Boolean             @default(true)
+  historicoAvc       Boolean             @default(false)
+  diabetes           Boolean             @default(false)
+  consumoAlcoolDoses Int                 @default(0)
+  estadoGeralSaude   HealthOverallStatus @default(BOM)
+  risco              RiskLevel           @default(BAIXO)
+  probabilidadeRisco Float               @default(0.1)
+  status             PatientStatus       @default(ATIVO)
+  doctorId           String?
+  doctor             DoctorProfile?      @relation("DoctorPatients", fields: [doctorId], references: [id], onDelete: SetNull)
+  records            HealthRecord[]      @relation("ProfileRecords")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+model InviteToken {
+  id           String   @id @default(uuid())
+  tokenHash    String   @unique
+  email        String
+  role         Role
+  invitedById  String
+  invitedBy    User     @relation("InviteSender", fields: [invitedById], references: [id], onDelete: Restrict)
+  invitedUserId String?
+  invitedUser  User?    @relation("InviteReceiver", fields: [invitedUserId], references: [id], onDelete: SetNull)
+  expiresAt    DateTime
+  usedAt       DateTime?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([email])
+}
+
+model HealthRecord {
+  id               String            @id @default(uuid())
+  patientUserId    String
+  patient          User              @relation("PatientRecords", fields: [patientUserId], references: [id], onDelete: Cascade)
+  patientProfileId String?
+  patientProfile   PatientProfile?   @relation("ProfileRecords", fields: [patientProfileId], references: [id], onDelete: SetNull)
+  type             HealthRecordType
+  value            Float
+  unit             String
+  notes            String            @default("")
+  recordedAt       DateTime
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([patientUserId, recordedAt])
 }

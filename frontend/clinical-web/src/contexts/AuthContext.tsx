@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, useState } from 'react';
 import { clearAuthSessionCookies, readAuthSessionCookies, setAuthSessionCookies } from '@/services/authSession';
-import { mockAuthService } from '@/services/mockAuthService';
+import { authApi } from '@/services/authApi';
 import { AuthSession, LoginInput } from '@/types/auth';
 
 interface AuthContextValue {
@@ -11,23 +11,29 @@ interface AuthContextValue {
   isBootstrapping: boolean;
   login: (credentials: LoginInput) => Promise<AuthSession>;
   logout: () => void;
+  setSession: (session: AuthSession) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<AuthSession | null>(() => readAuthSessionCookies());
+  const [session, setSessionState] = useState<AuthSession | null>(() => readAuthSessionCookies());
+
+  const setSession = (nextSession: AuthSession) => {
+    setAuthSessionCookies(nextSession, true);
+    setSessionState(nextSession);
+  };
 
   const login = async (credentials: LoginInput) => {
-    const authenticatedSession = await mockAuthService.login(credentials);
+    const authenticatedSession = await authApi.login(credentials);
     setAuthSessionCookies(authenticatedSession, credentials.remember);
-    setSession(authenticatedSession);
+    setSessionState(authenticatedSession);
     return authenticatedSession;
   };
 
   const logout = () => {
     clearAuthSessionCookies();
-    setSession(null);
+    setSessionState(null);
   };
 
   const value = useMemo<AuthContextValue>(
@@ -37,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isBootstrapping: false,
       login,
       logout,
+      setSession,
     }),
     [session],
   );
