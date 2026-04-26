@@ -1,42 +1,36 @@
 import pickle
 import pandas as pd
 
-# ==================================================================================
-# 1. CARREGAR MODELOS
-# ==================================================================================
-
+# 1 Carregar modelos e scalers
 def load_models():
     print("\n" + "="*80)
-    print("CARREGANDO MODELOS TREINADOS")
+    print("Carregando modelos e scalers")
     print("="*80)
     
     with open("models/modelo_supervisionado.pkl", "rb") as f:
         modelo_classificacao = pickle.load(f)
-    print("✅ Modelo de classificação carregado")
+    print("Modelo de classificação carregado")
     
     with open("models/modelo_clustering.pkl", "rb") as f:
         modelo_clustering = pickle.load(f)
-    print("✅ Modelo de clustering carregado")
+    print("Modelo de clustering carregado")
     
     with open("models/scaler_classificacao.pkl", "rb") as f:
         scaler_classificacao = pickle.load(f)
-    print("✅ Scaler de classificação carregado")
+    print("Scaler de classificação carregado")
     
     with open("models/scaler_clustering.pkl", "rb") as f:
         scaler_clustering = pickle.load(f)
-    print("✅ Scaler de clustering carregado")
+    print("Scaler de clustering carregado")
     
     with open("models/cluster_labels.pkl", "rb") as f:
         cluster_labels = pickle.load(f)
-    print("✅ Labels dos clusters carregados")
+    print("Labels dos clusters carregados")
     
     return modelo_classificacao, modelo_clustering, scaler_classificacao, scaler_clustering, cluster_labels
 
 
-# ==================================================================================
-# 2. PREVISÃO DE RISCO (CLASSIFICAÇÃO)
-# ==================================================================================
-
+# 2 Previsão de risco de diabetes (classificação supervisionada)
 def prever_risco_diabetes(paciente_data, modelo, scaler):
     
     X = pd.DataFrame([paciente_data])
@@ -54,10 +48,7 @@ def prever_risco_diabetes(paciente_data, modelo, scaler):
     }
 
 
-# ==================================================================================
-# 3. PERFIL DO PACIENTE (CLUSTERING CORRETO)
-# ==================================================================================
-
+# 3 Perfil do paciente (clustering não supervisionado)
 def identificar_perfil_paciente(paciente_data, modelo_clustering, scaler, cluster_labels):
     
     X = pd.DataFrame([paciente_data])
@@ -65,7 +56,6 @@ def identificar_perfil_paciente(paciente_data, modelo_clustering, scaler, cluste
     
     cluster = modelo_clustering.predict(X_scaled)[0]
     
-    # ✅ Agora usa labels reais baseados em risco
     perfil = cluster_labels.get(cluster, "Perfil desconhecido")
     
     return {
@@ -74,33 +64,30 @@ def identificar_perfil_paciente(paciente_data, modelo_clustering, scaler, cluste
     }
 
 
-# ==================================================================================
-# 4. ANÁLISE COMPLETA
-# ==================================================================================
-
+# 4 ANÁLISE COMPLETA
 def analisar_paciente(paciente_data):
     
     modelo_class, modelo_cluster, scaler_class, scaler_cluster, cluster_labels = load_models()
     
     print("\n" + "="*80)
-    print("ANÁLISE DO PACIENTE")
+    print("Analisando paciente")
     print("="*80)
     
-    # 🔮 Classificação (RISCO REAL)
+    # Classificação
     risco = prever_risco_diabetes(paciente_data, modelo_class, scaler_class)
     
-    print("\n🔮 PREVISÃO DE RISCO")
+    print("\nPrevisão de risco de diabetes:")
     print("="*80)
     print(f"Resultado: {risco['risco']}")
     print(f"Confiança: {risco['confianca']}")
     print(f"Probabilidade de diabetes: {risco['prob_com_diabetes']:.2%}")
     
-    # 👤 Clustering (PERFIL REAL)
+    # Clustering
     perfil = identificar_perfil_paciente(
         paciente_data, modelo_cluster, scaler_cluster, cluster_labels
     )
     
-    print("\n👤 PERFIL DO PACIENTE")
+    print("\nPerfil do paciente:")
     print("="*80)
     print(f"Cluster: {perfil['cluster']}")
     print(f"Perfil: {perfil['perfil']}")
@@ -108,10 +95,7 @@ def analisar_paciente(paciente_data):
     return risco, perfil
 
 
-# ==================================================================================
-# 5. EXEMPLO DE USO
-# ==================================================================================
-
+# 5. Exemplo de uso com dados fictícios, basta alterar os valores para testar diferentes resultados
 def exemplo():
     
     novo_paciente = {
@@ -130,17 +114,14 @@ def exemplo():
         'Age': 6.0                     # idade
     }
     
-    print("\n📋 DADOS DO PACIENTE:")
-    print(f"BMI: {novo_paciente['BMI']}")
+    print("\nDados do paciente:")
+    print(f"BMI(IMC): {novo_paciente['BMI']}")
     print(f"Fumante: {'Sim' if novo_paciente['Smoker'] else 'Não'}")
     print(f"Atividade física: {'Sim' if novo_paciente['PhysActivity'] else 'Não'}")
     
     analisar_paciente(novo_paciente)
 
 
-# ==================================================================================
-# EXECUÇÃO
-# ==================================================================================
-
+# Executar exemplo
 if __name__ == "__main__":
     exemplo()
