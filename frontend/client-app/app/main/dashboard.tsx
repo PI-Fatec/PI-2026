@@ -163,7 +163,7 @@ function RecordRow({
       <Text className="mt-1 text-[#334155]">
         {record.value} {record.unit} | {when}
       </Text>
-      <Text className="mt-1 text-sm text-[#64748B]">{record.notes || 'Sem observacoes'}</Text>
+      <Text className="mt-1 text-sm text-[#64748B]">{record.notes || 'Sem observações'}</Text>
       <View className="mt-3 flex-row gap-2">
         <Pressable onPress={onEdit} className="rounded-xl bg-[#DBEAFE] px-3 py-2">
           <Text className="font-semibold text-[#1D4ED8]">Editar</Text>

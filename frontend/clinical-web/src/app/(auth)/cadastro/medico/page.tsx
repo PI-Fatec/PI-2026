@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { authApi } from '@/services/authApi';
+import styles from '@/styles/auth-form.module.scss';
 
 export default function CadastroMedicoPage() {
   const router = useRouter();
@@ -49,27 +50,33 @@ export default function CadastroMedicoPage() {
   };
 
   return (
-    <main style={{ maxWidth: 560, margin: '40px auto', padding: 24 }}>
-      <h1>Cadastro de Medico</h1>
-      <p>Crie sua conta de acesso ao portal.</p>
+    <div className={styles.wrapper}>
+      <div className={styles.formHeader}>
+        <h2>Cadastro de Medico</h2>
+        <p>Crie sua conta e acesse o portal clinico.</p>
+      </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, marginTop: 16 }}>
-        <input placeholder="Nome completo" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required />
-        <input type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
-        <input placeholder="Telefone" value={form.telefone} onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))} />
-        <input placeholder="CRM" value={form.crm} onChange={(e) => setForm((p) => ({ ...p, crm: e.target.value }))} required />
-        <input placeholder="Especialidade" value={form.especialidade} onChange={(e) => setForm((p) => ({ ...p, especialidade: e.target.value }))} />
-        <input placeholder="Clinica" value={form.clinica} onChange={(e) => setForm((p) => ({ ...p, clinica: e.target.value }))} />
-        <input type="password" placeholder="Senha" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} required />
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <input className={styles.input} placeholder="Nome completo" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required />
+        <input className={styles.input} type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
+        <div className={styles.row}>
+          <input className={styles.input} placeholder="Telefone" value={form.telefone} onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))} />
+          <input className={styles.input} placeholder="CRM" value={form.crm} onChange={(e) => setForm((p) => ({ ...p, crm: e.target.value }))} required />
+        </div>
+        <div className={styles.row}>
+          <input className={styles.input} placeholder="Especialidade" value={form.especialidade} onChange={(e) => setForm((p) => ({ ...p, especialidade: e.target.value }))} />
+          <input className={styles.input} placeholder="Clinica" value={form.clinica} onChange={(e) => setForm((p) => ({ ...p, clinica: e.target.value }))} />
+        </div>
+        <input className={styles.input} type="password" placeholder="Senha" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} required />
 
-        {error && <p style={{ color: '#dc2626' }}>{error}</p>}
+        {error && <p className={styles.error}>{error}</p>}
 
-        <button type="submit" disabled={isLoading}>{isLoading ? 'Cadastrando...' : 'Cadastrar medico'}</button>
+        <button className={styles.submitButton} type="submit" disabled={isLoading}>
+          {isLoading ? 'Cadastrando...' : 'Cadastrar medico'}
+        </button>
       </form>
 
-      <p style={{ marginTop: 16 }}>
-        <Link href="/login">Voltar para login</Link>
-      </p>
-    </main>
+      <Link className={styles.backLink} href="/login">Voltar para login</Link>
+    </div>
   );
 }

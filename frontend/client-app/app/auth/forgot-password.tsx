@@ -13,11 +13,11 @@ export default function ForgotPasswordScreen() {
 
   const handleSend = () => {
     if (!email.trim()) {
-      Alert.alert('Email obrigatorio', 'Preencha o email para enviar a recuperacao.');
+      Alert.alert('E-mail obrigatório', 'Preencha o e-mail para enviar a recuperação.');
       return;
     }
 
-    Alert.alert('Email enviado', 'Se o email existir, voce recebera as instrucoes de recuperacao.');
+    Alert.alert('E-mail enviado', 'Se o e-mail existir, você receberá as instruções de recuperação.');
     router.replace('/auth/login');
   };
 
@@ -42,7 +42,7 @@ export default function ForgotPasswordScreen() {
           </View>
 
           <Text className="mt-8 text-center text-sm text-[#5D5D5D]">
-            Preencha seu email cadastrado
+            Preencha seu e-mail cadastrado
           </Text>
 
           <View className="mt-6">

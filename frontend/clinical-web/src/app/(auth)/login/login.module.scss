@@ -109,28 +109,6 @@
   margin-top: -8px;
 }
 
-.mockCredentials {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  border: 1px solid #d6e1f5;
-  border-radius: 8px;
-  background: #f6f9ff;
-
-  p {
-    font-size: 0.8rem;
-    color: #0b2d6a;
-    font-weight: 700;
-  }
-
-  span {
-    font-size: 0.76rem;
-    color: #4d5f8a;
-    line-height: 1.4;
-  }
-}
-
 .enterButton {
   margin-top: 10px;
   background-color: #11346b; // Conforme screenshot (azul bem escuro)

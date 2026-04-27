@@ -26,7 +26,7 @@ export default function InviteScreen() {
 
   useEffect(() => {
     if (!inviteToken) {
-      Alert.alert('Convite invalido', 'Token nao informado.');
+      Alert.alert('Convite inválido', 'Token não informado.');
       router.replace('/auth');
       return;
     }
@@ -35,10 +35,15 @@ export default function InviteScreen() {
       try {
         setIsLoadingInvite(true);
         const response = await validateInvite(inviteToken);
+        if (response.role !== 'PATIENT') {
+          Alert.alert('Convite inválido', 'Convites de médico devem ser finalizados no portal clínico.');
+          router.replace('/auth');
+          return;
+        }
         setRole(response.role);
         setEmail(response.email);
       } catch (error) {
-        Alert.alert('Convite invalido', error instanceof Error ? error.message : 'Nao foi possivel validar convite.');
+        Alert.alert('Convite inválido', error instanceof Error ? error.message : 'Não foi possível validar convite.');
         router.replace('/auth');
       } finally {
         setIsLoadingInvite(false);
@@ -50,17 +55,17 @@ export default function InviteScreen() {
 
   const handleAccept = async () => {
     if (!name.trim() || !password.trim()) {
-      Alert.alert('Campos obrigatorios', 'Preencha nome e senha para concluir.');
+      Alert.alert('Campos obrigatórios', 'Preencha nome e senha para concluir.');
       return;
     }
 
     if (role === 'PATIENT' && !cpf.trim()) {
-      Alert.alert('CPF obrigatorio', 'Informe o CPF para concluir o convite.');
+      Alert.alert('CPF obrigatório', 'Informe o CPF para concluir o convite.');
       return;
     }
 
     if (role === 'DOCTOR' && !crm.trim()) {
-      Alert.alert('CRM obrigatorio', 'Informe o CRM para concluir o convite.');
+      Alert.alert('CRM obrigatório', 'Informe o CRM para concluir o convite.');
       return;
     }
 
@@ -76,7 +81,7 @@ export default function InviteScreen() {
       });
       router.replace('/main');
     } catch (error) {
-      Alert.alert('Falha', error instanceof Error ? error.message : 'Nao foi possivel aceitar convite.');
+      Alert.alert('Falha', error instanceof Error ? error.message : 'Não foi possível aceitar convite.');
     } finally {
       setIsSubmitting(false);
     }

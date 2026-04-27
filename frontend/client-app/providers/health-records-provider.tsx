@@ -6,11 +6,11 @@ import { HealthRecord, HealthRecordType, HealthRecordTypeMeta, UpsertHealthRecor
 
 export const HEALTH_RECORD_TYPE_OPTIONS: HealthRecordTypeMeta[] = [
   { value: 'glicemia', label: 'Glicemia', unit: 'mg/dL', placeholder: 'Ex: 110' },
-  { value: 'pressao_arterial', label: 'Pressao arterial', unit: 'mmHg', placeholder: 'Ex: 120' },
-  { value: 'alimentacao', label: 'Alimentacao', unit: 'kcal', placeholder: 'Ex: 550' },
+  { value: 'pressao_arterial', label: 'Pressão arterial', unit: 'mmHg', placeholder: 'Ex: 120' },
+  { value: 'alimentacao', label: 'Alimentação', unit: 'kcal', placeholder: 'Ex: 550' },
   { value: 'exame', label: 'Exame', unit: 'un', placeholder: 'Ex: 1.2' },
-  { value: 'prontuario', label: 'Prontuario', unit: 'un', placeholder: 'Ex: 1' },
-  { value: 'predicao_risco', label: 'Predicao de risco', unit: '%', placeholder: 'Ex: 72' },
+  { value: 'prontuario', label: 'Prontuário', unit: 'un', placeholder: 'Ex: 1' },
+  { value: 'predicao_risco', label: 'Predição de risco', unit: '%', placeholder: 'Ex: 72' },
 ];
 
 type HealthRecordsContextValue = {

@@ -20,12 +20,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSessionState] = useState<AuthSession | null>(() => readAuthSessionCookies());
 
   const setSession = (nextSession: AuthSession) => {
+    if (!['ADMIN', 'DOCTOR'].includes(nextSession.role)) {
+      throw new Error('Somente administradores e medicos podem acessar o portal clinico.');
+    }
+
     setAuthSessionCookies(nextSession, true);
     setSessionState(nextSession);
   };
 
   const login = async (credentials: LoginInput) => {
     const authenticatedSession = await authApi.login(credentials);
+
+    if (!['ADMIN', 'DOCTOR'].includes(authenticatedSession.role)) {
+      throw new Error('Somente administradores e medicos podem acessar o portal clinico.');
+    }
+
     setAuthSessionCookies(authenticatedSession, credentials.remember);
     setSessionState(authenticatedSession);
     return authenticatedSession;

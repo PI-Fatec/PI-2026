@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/doctors', requireAuth, requireRoles('ADMIN'), inviteController.inviteDoctor);
 router.post('/patients', requireAuth, requireRoles('DOCTOR'), inviteController.invitePatient);
+router.get('/open-app', inviteController.openAppInvite);
 router.get('/validate', inviteController.validateInvite);
 router.post('/accept', inviteController.acceptInvite);
 

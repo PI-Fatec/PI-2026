@@ -5,7 +5,6 @@ const publicRoutes = [
   '/login',
   '/cadastro',
   '/cadastro/medico',
-  '/cadastro/cliente',
   '/convite/aceitar',
   '/404',
   '/recuperar-senha',
@@ -13,12 +12,22 @@ const publicRoutes = [
 
 export default function proxy(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
+  const role = request.cookies.get('role')?.value;
   const { pathname } = request.nextUrl;
 
   const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
   if (!token && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  if (token && role === 'PATIENT' && !isPublicRoute) {
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('token');
+    response.cookies.delete('role');
+    response.cookies.delete('user_name');
+    response.cookies.delete('user_email');
+    return response;
   }
 
   if (token && isPublicRoute && pathname !== '/convite/aceitar') {

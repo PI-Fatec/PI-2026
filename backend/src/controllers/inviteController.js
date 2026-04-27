@@ -8,12 +8,14 @@ const { computeRiskMetrics } = require('../services/riskService');
 const { normalizeEmail, toBoolean, toInt, toNumber } = require('../utils/parsers');
 
 const webBaseUrl = process.env.WEB_BASE_URL || 'http://localhost:3001';
+const backendBaseUrl = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
 const mobileDeepLinkBase = process.env.MOBILE_DEEP_LINK_BASE || 'clientapp://invite';
 
 function buildUrls(token) {
   const webUrl = `${webBaseUrl.replace(/\/$/, '')}/convite/aceitar?token=${token}`;
   const deepLinkUrl = `${mobileDeepLinkBase}${mobileDeepLinkBase.includes('?') ? '&' : '?'}token=${token}`;
-  return { webUrl, deepLinkUrl };
+  const appOpenUrl = `${backendBaseUrl.replace(/\/$/, '')}/api/invites/open-app?token=${encodeURIComponent(token)}`;
+  return { webUrl, deepLinkUrl, appOpenUrl };
 }
 
 function mapDoctorProfile(profile, user) {
@@ -158,6 +160,7 @@ exports.inviteDoctor = async (req, res) => {
       role: 'DOCTOR',
       inviterName: inviter?.name || 'Administrador',
       webUrl: urls.webUrl,
+      appOpenUrl: urls.appOpenUrl,
       deepLinkUrl: urls.deepLinkUrl,
     });
 
@@ -231,6 +234,7 @@ exports.invitePatient = async (req, res) => {
       role: 'PATIENT',
       inviterName: inviter?.name || 'Medico',
       webUrl: urls.webUrl,
+      appOpenUrl: urls.appOpenUrl,
       deepLinkUrl: urls.deepLinkUrl,
     });
 
@@ -370,4 +374,52 @@ exports.acceptInvite = async (req, res) => {
 
     return res.status(500).json({ error: 'Falha ao aceitar convite.' });
   }
+};
+
+exports.openAppInvite = async (req, res) => {
+  const token = String(req.query.token || '').trim();
+
+  if (!token) {
+    return res.status(400).send('Token de convite nao informado.');
+  }
+
+  const urls = buildUrls(token);
+  const html = `
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Abrir convite no app</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; background: #f4f8ff; color: #1f2f4d; }
+      .wrap { max-width: 560px; margin: 48px auto; background: #fff; border: 1px solid #dbe4f1; border-radius: 12px; padding: 20px; }
+      h1 { font-size: 20px; margin: 0 0 10px; }
+      p { line-height: 1.5; margin: 0 0 12px; color: #4a6286; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+      a { text-decoration: none; border-radius: 8px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
+      .primary { background: #0f172a; color: #fff; }
+      .secondary { background: #1d4ed8; color: #fff; }
+      .helper { margin-top: 12px; font-size: 13px; color: #60779b; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Abrindo seu convite no app...</h1>
+      <p>Se o app nao abrir automaticamente, toque em <strong>Abrir no app</strong>.</p>
+      <div class="actions">
+        <a class="primary" href="${urls.deepLinkUrl}">Abrir no app</a>
+        <a class="secondary" href="${urls.webUrl}">Continuar no portal web</a>
+      </div>
+      <p class="helper">Dica: no celular, o link do app pode exigir toque manual por seguranca do navegador.</p>
+    </main>
+    <script>
+      const deepLink = ${JSON.stringify(urls.deepLinkUrl)};
+      window.location.href = deepLink;
+    </script>
+  </body>
+</html>
+  `;
+
+  return res.setHeader('Content-Type', 'text/html; charset=utf-8').send(html);
 };

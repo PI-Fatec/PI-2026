@@ -75,17 +75,6 @@
 
 .aiCard {
   position: relative;
-
-  small {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    color: #2f7d32;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-  }
 }
 
 .contentGrid {
@@ -178,6 +167,12 @@
     color: #2e405e;
     font-size: 0.87rem;
   }
+}
+
+.tableState {
+  text-align: center;
+  color: #6d7f9d;
+  font-size: 0.86rem;
 }
 
 .nameCell {
@@ -299,6 +294,28 @@
     color: #8f1b1b;
     margin-top: 4px;
   }
+}
+
+.errorText {
+  color: #b82727;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.placeholderText {
+  color: #6d7f9d;
+  font-size: 0.84rem;
+  margin-top: 4px;
+}
+
+.placeholderBox {
+  border: 1px dashed #c9d8ea;
+  border-radius: 10px;
+  background: #f7faff;
+  padding: 12px;
+  color: #5a6f90;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 @media (max-width: 1240px) {

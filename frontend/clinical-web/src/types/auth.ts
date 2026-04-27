@@ -16,7 +16,7 @@ export interface LoginInput {
 }
 
 export interface RegisterInput {
-  role: Exclude<UserRole, 'ADMIN'>;
+  role: 'DOCTOR';
   name: string;
   email: string;
   password: string;

@@ -22,7 +22,7 @@ export async function requestNotificationPermission() {
 
     return status === 'granted';
   } catch (error) {
-    console.warn('Falha ao solicitar permissao de notificacao.', error);
+    console.warn('Falha ao solicitar permissão de notificação.', error);
     return false;
   }
 }

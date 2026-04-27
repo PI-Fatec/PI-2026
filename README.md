@@ -73,13 +73,53 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
-6. Inicie o servidor em modo desenvolvimento:
+6. Rode a seed do admin padrao:
+
+```bash
+npx prisma db seed
+```
+
+Credenciais iniciais:
+
+- E-mail: `admin@healthtrack.com`
+- Senha: `admin123`
+
+7. Inicie o servidor em modo desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
 Servidor padrao: http://localhost:3000
+
+## Backend com Docker
+
+1. Entre na pasta do backend:
+
+```bash
+cd backend
+```
+
+2. Garanta que o `.env` tenha os hosts dos servicos Docker:
+
+```env
+DATABASE_URL="postgresql://healthtrack:healthtrack@postgres:5432/healthtrack?schema=public"
+RABBITMQ_URL="amqp://rabbitmq:5672"
+```
+
+3. Suba os containers:
+
+```bash
+docker compose up --build
+```
+
+Esse fluxo ja executa `prisma db seed` no startup do backend para garantir o admin padrao.
+
+4. Para derrubar os containers:
+
+```bash
+docker compose down
+```
 
 ## Rotas principais (backend)
 
@@ -104,3 +144,4 @@ Servidor padrao: http://localhost:3000
 ## Scripts disponiveis no backend
 
 - `npm run dev`: inicia o servidor com nodemon
+- `npm run seed`: executa seed do Prisma

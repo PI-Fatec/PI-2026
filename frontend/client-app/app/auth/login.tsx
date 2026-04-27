@@ -17,7 +17,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Campos obrigatorios', 'Preencha email/CRM e senha para entrar.');
+      Alert.alert('Campos obrigatórios', 'Preencha e-mail e senha para entrar.');
       return;
     }
 
@@ -26,7 +26,7 @@ export default function LoginScreen() {
       await signInWithCredentials(email.trim(), password);
       router.replace('/main');
     } catch (error) {
-      Alert.alert('Falha no login', error instanceof Error ? error.message : 'Nao foi possivel autenticar.');
+      Alert.alert('Falha no login', error instanceof Error ? error.message : 'Não foi possível autenticar.');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +50,7 @@ export default function LoginScreen() {
             <AuthTextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="Email ou CRM"
+              placeholder="Email"
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -76,10 +76,8 @@ export default function LoginScreen() {
             </Text>
           </Pressable>
 
-          <Pressable onPress={() => router.replace('/auth/register')} className="mt-6">
-            <Text className="text-center text-xs text-[#2D8DE8]">
-              Clique aqui para criar uma conta
-            </Text>
+          <Pressable onPress={() => router.replace('/auth')} className="mt-6">
+            <Text className="text-center text-xs text-[#2D8DE8]">Voltar para início</Text>
           </Pressable>
         </AuthBottomSheet>
       </View>

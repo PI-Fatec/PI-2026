@@ -1,4 +1,24 @@
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+import Constants from 'expo-constants';
+
+function resolveApiBaseUrl() {
+  const envBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (envBaseUrl) {
+    return envBaseUrl;
+  }
+
+  const expoConfigHostUri = (Constants.expoConfig as { hostUri?: string } | null)?.hostUri;
+  const expoGoDebuggerHost = (Constants as unknown as { expoGoConfig?: { debuggerHost?: string } }).expoGoConfig?.debuggerHost;
+  const host = expoConfigHostUri || expoGoDebuggerHost;
+  const hostIp = host?.split(':')[0];
+
+  if (hostIp) {
+    return `http://${hostIp}:3000`;
+  }
+
+  return 'http://localhost:3000';
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -29,7 +49,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.error || 'Erro na comunicacao com servidor.');
+    throw new Error(payload.error || 'Erro na comunicação com servidor.');
   }
 
   if (response.status === 204) {

@@ -16,26 +16,7 @@ export const authApi = {
   login(identifier: string, password: string) {
     return apiRequest<AuthPayload>('/api/auth/login', {
       method: 'POST',
-      body: { identifier, password },
-    });
-  },
-
-  registerSelf(payload: {
-    role: 'DOCTOR' | 'PATIENT';
-    name: string;
-    email: string;
-    password: string;
-    telefone?: string;
-    crm?: string;
-    especialidade?: string;
-    clinica?: string;
-    cpf?: string;
-    dataNascimento?: string;
-    sexo?: 'Masculino' | 'Feminino' | 'Outro';
-  }) {
-    return apiRequest<AuthPayload>('/api/auth/register/self', {
-      method: 'POST',
-      body: payload,
+      body: { identifier, password, portal: 'MOBILE_APP' },
     });
   },
 

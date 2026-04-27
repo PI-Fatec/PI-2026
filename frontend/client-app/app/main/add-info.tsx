@@ -45,7 +45,7 @@ export default function AddInfoScreen() {
     const parsedValue = Number(value.replace(',', '.'));
 
     if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
-      Alert.alert('Valor invalido', 'Informe um valor numerico valido.');
+      Alert.alert('Valor inválido', 'Informe um valor numérico válido.');
       return;
     }
 
@@ -70,11 +70,11 @@ export default function AddInfoScreen() {
   return (
     <ScrollView className="flex-1 bg-[#F3F4F6]" contentContainerClassName="px-5 pb-8 pt-14">
       <AppHeader
-        title="Adicionar info"
+        title="Adicionar informação"
         showBackButton
         onPressBack={() => router.back()}
         showAction={false}
-        onPressNotifications={() => Alert.alert('Notificacoes', 'Sem novos avisos.')}
+        onPressNotifications={() => Alert.alert('Notificações', 'Sem novos avisos.')}
       />
 
       <View className="mt-8 rounded-3xl bg-white p-4">
@@ -137,13 +137,13 @@ export default function AddInfoScreen() {
       </View>
 
       <View className="mt-4 rounded-2xl border border-dashed border-[#60A5FA] bg-white p-4">
-        <Text className="text-xs font-semibold uppercase tracking-[2px] text-[#64748B]">Notas e observacoes</Text>
+        <Text className="text-xs font-semibold uppercase tracking-[2px] text-[#64748B]">Notas e observações</Text>
         <TextInput
           value={notes}
           onChangeText={setNotes}
           multiline
           numberOfLines={4}
-          placeholder="Ex: observacoes do registro, origem do exame, refeicao etc."
+          placeholder="Ex: observações do registro, origem do exame, refeição etc."
           placeholderTextColor="#94A3B8"
           className="mt-3 rounded-xl border border-dashed border-[#93C5FD] px-3 py-3 text-base text-[#1E293B]"
         />
@@ -152,7 +152,7 @@ export default function AddInfoScreen() {
       <Pressable
         onPress={handleSave}
         className="mt-7 h-14 items-center justify-center rounded-full bg-[#0F3D8C]">
-        <Text className="text-xl font-semibold text-white">{editRecord ? 'Salvar alteracoes' : 'Salvar Registro'}</Text>
+        <Text className="text-xl font-semibold text-white">{editRecord ? 'Salvar alterações' : 'Salvar registro'}</Text>
       </Pressable>
     </ScrollView>
   );

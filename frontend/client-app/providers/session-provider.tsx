@@ -22,19 +22,6 @@ type SessionContextValue = {
   userName: string;
   completeOnboarding: () => Promise<void>;
   signInWithCredentials: (identifier: string, password: string) => Promise<void>;
-  registerSelf: (payload: {
-    role: 'DOCTOR' | 'PATIENT';
-    name: string;
-    email: string;
-    password: string;
-    telefone?: string;
-    crm?: string;
-    especialidade?: string;
-    clinica?: string;
-    cpf?: string;
-    dataNascimento?: string;
-    sexo?: 'Masculino' | 'Feminino' | 'Outro';
-  }) => Promise<void>;
   acceptInvite: (payload: {
     token: string;
     role: 'DOCTOR' | 'PATIENT';
@@ -74,7 +61,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
         setUser(storedUser ? (JSON.parse(storedUser) as SessionUser) : null);
         setHasOnboarded(onboardingDone === 'true');
       } catch (error) {
-        console.warn('Falha ao carregar sessao local.', error);
+        console.warn('Falha ao carregar sessão local.', error);
       } finally {
         setIsLoading(false);
       }
@@ -96,24 +83,12 @@ export function SessionProvider({ children }: PropsWithChildren) {
 
   const signInWithCredentials = async (identifier: string, password: string) => {
     const payload = await authApi.login(identifier, password);
-    await persistAuth(payload.token, payload.user);
-  };
 
-  const registerSelf = async (payload: {
-    role: 'DOCTOR' | 'PATIENT';
-    name: string;
-    email: string;
-    password: string;
-    telefone?: string;
-    crm?: string;
-    especialidade?: string;
-    clinica?: string;
-    cpf?: string;
-    dataNascimento?: string;
-    sexo?: 'Masculino' | 'Feminino' | 'Outro';
-  }) => {
-    const response = await authApi.registerSelf(payload);
-    await persistAuth(response.token, response.user);
+    if (payload.user.role !== 'PATIENT') {
+      throw new Error('Somente pacientes podem acessar este aplicativo.');
+    }
+
+    await persistAuth(payload.token, payload.user);
   };
 
   const validateInvite = async (inviteToken: string) => authApi.validateInvite(inviteToken);
@@ -133,6 +108,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
     sexo?: 'Masculino' | 'Feminino' | 'Outro';
   }) => {
     const response = await authApi.acceptInvite(payload);
+
+    if (response.user.role !== 'PATIENT') {
+      throw new Error('Somente convites de pacientes podem ser finalizados no aplicativo.');
+    }
+
     await persistAuth(response.token, response.user);
   };
 
@@ -151,7 +131,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
       userName: user?.name ?? '',
       completeOnboarding,
       signInWithCredentials,
-      registerSelf,
       acceptInvite,
       validateInvite,
       signOut,

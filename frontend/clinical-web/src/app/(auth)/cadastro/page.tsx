@@ -7,13 +7,12 @@ export default function CadastroEntryPage() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.formHeader}>
-        <h2>Escolha seu tipo de cadastro</h2>
-        <p>Crie seu acesso como medico ou cliente.</p>
+        <h2>Solicitar credenciamento</h2>
+        <p>Crie seu acesso medico ao portal clinico.</p>
       </div>
 
       <div className={styles.form}>
         <Link href="/cadastro/medico" className={styles.btnSecondary}>Cadastro de Medico</Link>
-        <Link href="/cadastro/cliente" className={styles.btnSecondary}>Cadastro de Cliente</Link>
       </div>
 
       <footer className={styles.footer}>

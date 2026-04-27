@@ -40,7 +40,7 @@ export default function HistoryScreen() {
                 </Text>
               </View>
               <Text className="mt-2 text-sm text-[#475569]">{when}</Text>
-              <Text className="mt-1 text-sm text-[#64748B]">{record.notes || 'Sem observacoes'}</Text>
+              <Text className="mt-1 text-sm text-[#64748B]">{record.notes || 'Sem observações'}</Text>
 
               <View className="mt-4 flex-row gap-2">
                 <Pressable onPress={() => setEditingRecord(record)} className="rounded-xl bg-[#DBEAFE] px-3 py-2">

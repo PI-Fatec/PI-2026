@@ -11,30 +11,38 @@ export default function HomeScreen() {
   const { userName } = useSession();
   const { records } = useHealthRecords();
   const latestGlucose = records.find((record) => record.type === 'glicemia');
+  const formattedRecordedAt = latestGlucose
+    ? new Date(latestGlucose.recordedAt).toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : null;
 
   return (
     <View className="flex-1 bg-[#F3F7FC] px-5 pt-14">
       <AppHeader
-        title={`Ola, ${userName || 'Usuario'}!`}
+        title={`Olá, ${userName || 'Usuário'}!`}
         actionLabel="Perfil"
         onPressAction={() => router.push('/main/profile')}
-        onPressNotifications={() => Alert.alert('Notificacoes', 'Voce tem 2 novas notificacoes.')}
+        onPressNotifications={() => Alert.alert('Notificações', 'Você tem 2 novas notificações.')}
       />
 
       <Pressable
         onPress={() => router.push('/main/add-info')}
         className="mt-8 rounded-[28px] bg-[#0F2859] px-6 py-8">
-        <Text className="text-sm text-[#D1D5DB]">Hoje, 08:30</Text>
+        <Text className="text-sm text-[#D1D5DB]">{formattedRecordedAt ?? 'Sem registro recente'}</Text>
         <View className="mt-3 flex-row items-end gap-2">
-          <Text className="text-5xl font-extrabold text-white">{latestGlucose?.value ?? 110}</Text>
+          <Text className="text-5xl font-extrabold text-white">{latestGlucose?.value ?? '--'}</Text>
           <Text className="mb-1 text-xl font-semibold text-[#D1D5DB]">
-            {latestGlucose?.unit ?? 'mg/dL'}
+            {latestGlucose?.unit ?? '--'}
           </Text>
         </View>
         <Text className="mt-3 text-base font-semibold text-[#93C5FD]">Adicionar Novo</Text>
       </Pressable>
 
-      <Text className="mt-8 text-2xl font-semibold text-[#1F2937]">Acoes Rapidas</Text>
+      <Text className="mt-8 text-2xl font-semibold text-[#1F2937]">Ações Rápidas</Text>
       <View className="mt-4 flex-row gap-3">
         <QuickAction
           label="Registrar Glicemia"
@@ -42,7 +50,7 @@ export default function HomeScreen() {
           onPress={() => router.push('/main/add-info?type=glicemia')}
         />
         <QuickAction
-          label="Registrar Pressao"
+          label="Registrar Pressão"
           icon="heart-outline"
           onPress={() => router.push('/main/add-info?type=pressao_arterial')}
         />
@@ -54,21 +62,13 @@ export default function HomeScreen() {
       </View>
 
       <View className="mt-8 flex-row items-center justify-between">
-        <Text className="text-xl font-semibold text-[#1F2937]">Proximos agendamentos</Text>
-        <Pressable>
-          <Text className="text-sm font-semibold text-[#2563EB]">ver mais</Text>
-        </Pressable>
+        <Text className="text-xl font-semibold text-[#1F2937]">Próximos agendamentos</Text>
       </View>
 
-      <View className="mt-4 flex-row items-center rounded-2xl border border-[#D1D5DB] bg-white p-4">
-        <View className="h-12 w-12 items-center justify-center rounded-full bg-[#CFFAFE]">
-          <Text className="font-semibold text-[#0369A1]">A</Text>
-        </View>
-        <View className="ml-3 flex-1">
-          <Text className="text-base font-semibold text-[#111827]">Consulta: DR. jobison</Text>
-          <Text className="text-sm text-[#6B7280]">Amanha 10:00 AM</Text>
-        </View>
-        <View className="h-16 w-3 rounded-full bg-[#4F46E5]" />
+      <View className="mt-4 rounded-2xl border border-[#D1D5DB] bg-white p-4">
+        <Text className="text-sm text-[#6B7280]">
+          Nenhum agendamento disponível no momento.
+        </Text>
       </View>
     </View>
   );

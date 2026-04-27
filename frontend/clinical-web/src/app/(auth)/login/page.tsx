@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, ArrowRight, Eye, EyeOff, IdCard } from 'lucide-react';
+import { Lock, ArrowRight, Eye, EyeOff, IdCard } from 'lucide-react';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { useAuth } from '@/hooks/useAuth';
-import { Metadata } from "next";
 import Image from 'next/image';
 import  logo  from '@/assets/logo.png';
 import styles from './login.module.scss';
@@ -110,12 +109,6 @@ export default function LoginPage() {
         </div>
 
         {errorMessage && <p className={styles.submitError}>{errorMessage}</p>}
-
-        <div className={styles.mockCredentials}>
-          <p>Modo mock para testes:</p>
-          <span>Medico: medico@test.com ou CRM12345 / 123456</span>
-          <span>Administrador: admin@test.com / 123456</span>
-        </div>
 
         <Button type="submit" variant='primary' icon={ArrowRight} isLoading={isLoading}>
           Entrar no Painel

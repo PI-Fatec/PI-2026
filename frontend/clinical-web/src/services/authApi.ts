@@ -15,7 +15,11 @@ export const authApi = {
   async login(payload: LoginInput): Promise<AuthSession> {
     const response = await apiRequest<AuthResponse>('/api/auth/login', {
       method: 'POST',
-      body: payload,
+      body: {
+        identifier: payload.identifier,
+        password: payload.password,
+        portal: 'CLINICAL_WEB',
+      },
     });
 
     return {
