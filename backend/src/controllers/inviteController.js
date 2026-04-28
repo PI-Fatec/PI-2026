@@ -258,7 +258,16 @@ exports.validateInvite = async (req, res) => {
     }
 
     const tokenHash = hashInviteToken(rawToken);
-    const invite = await prisma.inviteToken.findUnique({ where: { tokenHash } });
+    const invite = await prisma.inviteToken.findUnique({
+      where: { tokenHash },
+      include: {
+        invitedUser: {
+          include: {
+            patientProfile: true,
+          },
+        },
+      },
+    });
 
     if (!invite) {
       return res.status(404).json({ error: 'Convite nao encontrado.' });
@@ -276,6 +285,7 @@ exports.validateInvite = async (req, res) => {
       valid: true,
       role: invite.role,
       email: invite.email,
+      cpf: invite.invitedUser?.patientProfile?.cpf ?? null,
       expiresAt: invite.expiresAt,
     });
   } catch (error) {

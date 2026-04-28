@@ -181,8 +181,8 @@
   gap: 6px;
 
   button {
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
     border: 1px solid #d4deea;
     background: #f8fafc;
@@ -191,6 +191,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 

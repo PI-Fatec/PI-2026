@@ -5,6 +5,7 @@ export interface InviteValidationResponse {
   valid: boolean;
   role: 'DOCTOR' | 'PATIENT';
   email: string;
+  cpf?: string | null;
   expiresAt: string;
 }
 

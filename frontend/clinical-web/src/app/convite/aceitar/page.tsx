@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
 import { inviteApi } from '@/services/inviteApi';
 import { useAuth } from '@/hooks/useAuth';
+import { maskCpf } from '@/utils/masks';
 import styles from '@/styles/auth-form.module.scss';
 
 export default function AceitarConvitePage() {
@@ -79,6 +80,9 @@ export default function AceitarConvitePage() {
         const invite = await inviteApi.validate(token);
         setRole(invite.role);
         setEmail(invite.email);
+        if (invite.role === 'PATIENT') {
+          setForm((prev) => ({ ...prev, cpf: invite.cpf ?? '' }));
+        }
       } catch (err) {
         setInviteError(err instanceof Error ? err.message : 'Falha ao validar convite.');
       } finally {
@@ -268,8 +272,9 @@ export default function AceitarConvitePage() {
                 id="cpf"
                 className={styles.input}
                 placeholder="000.000.000-00"
-                value={form.cpf}
-                onChange={(e) => setForm((p) => ({ ...p, cpf: e.target.value }))}
+                value={maskCpf(form.cpf)}
+                disabled
+                readOnly
                 required
               />
             </label>

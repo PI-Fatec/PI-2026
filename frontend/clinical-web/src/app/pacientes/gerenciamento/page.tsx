@@ -141,6 +141,10 @@ export default function GerenciamentoPacientesPage() {
     setPendingDelete(null);
   };
 
+  const handleRequestDelete = (patient: Patient) => {
+    setPendingDelete(patient);
+  };
+
   const handleSaveEdit = async () => {
     if (!sheetPatient) {
       return;
@@ -360,7 +364,12 @@ export default function GerenciamentoPacientesPage() {
                           <button type="button" onClick={() => openEdit(patient)} aria-label="Editar">
                             <Edit3 size={16} />
                           </button>
-                          <button type="button" onClick={() => setPendingDelete(patient)} aria-label="Excluir">
+                          <button
+                            type="button"
+                            onClick={() => handleRequestDelete(patient)}
+                            onTouchEnd={() => handleRequestDelete(patient)}
+                            aria-label="Excluir"
+                          >
                             <Trash2 size={16} />
                           </button>
                         </div>
