@@ -3,6 +3,9 @@
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Building2, KeyRound, Mail, Phone, Stethoscope, UserRound } from 'lucide-react';
+import { Input } from '@/components/ui/Input/Input';
+import { Toast } from '@/components/ui/Toast/Toast';
 import { useAuth } from '@/hooks/useAuth';
 import { authApi } from '@/services/authApi';
 import styles from '@/styles/auth-form.module.scss';
@@ -22,6 +25,15 @@ export default function CadastroMedicoPage() {
     clinica: '',
     password: '',
   });
+
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -57,19 +69,65 @@ export default function CadastroMedicoPage() {
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        <input className={styles.input} placeholder="Nome completo" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required />
-        <input className={styles.input} type="email" placeholder="E-mail" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} required />
+        <Input
+          label="Nome completo"
+          placeholder="Nome completo"
+          icon={UserRound}
+          value={form.name}
+          onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+          required
+        />
+        <Input
+          label="E-mail"
+          type="email"
+          placeholder="E-mail"
+          icon={Mail}
+          value={form.email}
+          onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+          required
+        />
         <div className={styles.row}>
-          <input className={styles.input} placeholder="Telefone" value={form.telefone} onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))} />
-          <input className={styles.input} placeholder="CRM" value={form.crm} onChange={(e) => setForm((p) => ({ ...p, crm: e.target.value }))} required />
+          <Input
+            label="Telefone"
+            placeholder="Telefone"
+            icon={Phone}
+            value={form.telefone}
+            onChange={(e) => setForm((p) => ({ ...p, telefone: formatPhone(e.target.value) }))}
+          />
+          <Input
+            label="CRM"
+            placeholder="CRM"
+            icon={Stethoscope}
+            value={form.crm}
+            onChange={(e) => setForm((p) => ({ ...p, crm: e.target.value }))}
+            required
+          />
         </div>
         <div className={styles.row}>
-          <input className={styles.input} placeholder="Especialidade" value={form.especialidade} onChange={(e) => setForm((p) => ({ ...p, especialidade: e.target.value }))} />
-          <input className={styles.input} placeholder="Clinica" value={form.clinica} onChange={(e) => setForm((p) => ({ ...p, clinica: e.target.value }))} />
+          <Input
+            label="Especialidade"
+            placeholder="Especialidade"
+            icon={Stethoscope}
+            value={form.especialidade}
+            onChange={(e) => setForm((p) => ({ ...p, especialidade: e.target.value }))}
+          />
+          <Input
+            label="Clinica"
+            placeholder="Clinica"
+            icon={Building2}
+            value={form.clinica}
+            onChange={(e) => setForm((p) => ({ ...p, clinica: e.target.value }))}
+          />
         </div>
-        <input className={styles.input} type="password" placeholder="Senha" value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} required />
-
-        {error && <p className={styles.error}>{error}</p>}
+        <Input
+          label="Senha"
+          type="password"
+          placeholder="Senha"
+          icon={KeyRound}
+          value={form.password}
+          onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+          required
+        />
 
         <button className={styles.submitButton} type="submit" disabled={isLoading}>
           {isLoading ? 'Cadastrando...' : 'Cadastrar medico'}
@@ -77,6 +135,15 @@ export default function CadastroMedicoPage() {
       </form>
 
       <Link className={styles.backLink} href="/login">Voltar para login</Link>
+
+      <Toast
+        isOpen={Boolean(error)}
+        variant="error"
+        position="top-right"
+        title="Falha no cadastro"
+        message={error}
+        onClose={() => setError('')}
+      />
     </div>
   );
 }

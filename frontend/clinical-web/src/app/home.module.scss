@@ -175,6 +175,16 @@
   font-size: 0.86rem;
 }
 
+.loadingInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metricSpinner {
+  color: #2c4f82;
+}
+
 .nameCell {
   display: flex;
   align-items: center;

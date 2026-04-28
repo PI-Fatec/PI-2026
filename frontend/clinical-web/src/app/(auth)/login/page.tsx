@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Lock, ArrowRight, Eye, EyeOff, IdCard } from 'lucide-react';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
+import { Toast } from '@/components/ui/Toast/Toast';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import  logo  from '@/assets/logo.png';
@@ -21,7 +22,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberSession, setRememberSession] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,7 +39,7 @@ export default function LoginPage() {
       await login({
         identifier,
         password,
-        remember: rememberSession,
+        remember: false,
       });
 
       router.replace('/');
@@ -98,15 +98,7 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <div className={styles.checkboxGroup}>
-          <input
-            type="checkbox"
-            id="remember"
-            checked={rememberSession}
-            onChange={(event) => setRememberSession(event.target.checked)}
-          />
-          <label htmlFor="remember">Manter sessão ativa por 12 horas</label>
-        </div>
+        
 
         {errorMessage && <p className={styles.submitError}>{errorMessage}</p>}
 
@@ -118,11 +110,20 @@ export default function LoginPage() {
       <footer className={styles.footer}>
         <div className={styles.footerRow}>
           <p>Ainda não tem acesso?</p>
-          <Link href="/cadastro" className={styles.btnSecondary}>Solicitar Credenciamento</Link>
+          <Link href="/cadastro/medico" className={styles.btnSecondary}>Solicitar Credenciamento</Link>
         </div>
         
         
       </footer>
+
+      <Toast
+        isOpen={Boolean(errorMessage)}
+        variant="error"
+        position="top-right"
+        title="Falha no login"
+        message={errorMessage}
+        onClose={() => setErrorMessage('')}
+      />
     </div>
   );
 }

@@ -56,9 +56,7 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 			</div>
 
 			<div className={styles.brandBlock}>
-				<div className={styles.logoImageWrap}>
-					<Image src={logo} alt="HealthTrack AI" priority />
-				</div>
+				
 				<div>
 					<h1>HealthTrack AI</h1>
 					<p>Clinical Intelligence</p>

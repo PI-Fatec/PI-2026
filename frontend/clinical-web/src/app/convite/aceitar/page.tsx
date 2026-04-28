@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { CheckCircle2 } from 'lucide-react';
 import { inviteApi } from '@/services/inviteApi';
 import { useAuth } from '@/hooks/useAuth';
 import styles from '@/styles/auth-form.module.scss';
@@ -33,6 +34,7 @@ export default function AceitarConvitePage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const inviteErrorInfo = useMemo(() => {
     const normalizedError = inviteError.toLowerCase();
@@ -109,7 +111,7 @@ export default function AceitarConvitePage() {
       });
 
       if (result.user.role === 'PATIENT') {
-        setSubmitError('Convite de paciente deve ser finalizado no aplicativo mobile.');
+        setIsSuccess(true);
         return;
       }
 
@@ -148,6 +150,25 @@ export default function AceitarConvitePage() {
           <div className={styles.statusActions}>
             <Link href="/login" className={styles.statusPrimaryAction}>Ir para login</Link>
             <Link href="/cadastro/medico" className={styles.statusSecondaryAction}>Solicitar novo acesso</Link>
+          </div>
+        </article>
+      </div>
+    );
+  }
+
+  if (isSuccess) {
+    return (
+      <div className={styles.wrapper}>
+        <article className={styles.statusCard}>
+          <div className={styles.successIconWrap}>
+            <CheckCircle2 size={44} className={styles.successIcon} />
+          </div>
+          <h3 className={styles.statusTitle}>Cadastro concluido com sucesso</h3>
+          <p className={styles.statusDescription}>
+            Seu convite foi finalizado. Agora voce ja pode acessar sua conta no aplicativo ou no portal web.
+          </p>
+          <div className={styles.statusActions}>
+            <Link href="/login" className={styles.statusPrimaryAction}>Ir para login</Link>
           </div>
         </article>
       </div>

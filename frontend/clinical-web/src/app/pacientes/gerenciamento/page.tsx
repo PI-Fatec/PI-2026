@@ -6,6 +6,8 @@ import { Edit3, Eye, Trash2 } from 'lucide-react';
 import { Header } from '@/components/Layout/Header/Header';
 import { Sidebar } from '@/components/Layout/Sidebar/Sidebar';
 import { AlertDialog } from '@/components/ui/AlertDialog/AlertDialog';
+import { DatePicker } from '@/components/ui/DatePicker/Datepicker';
+import { Select } from '@/components/ui/Select/Select';
 import { SideSheet } from '@/components/ui/SideSheet/SideSheet';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,6 +31,48 @@ const calculateImc = (alturaCm: number, pesoKg: number) => {
 
   const alturaM = alturaCm / 100;
   return Number((pesoKg / (alturaM * alturaM)).toFixed(1));
+};
+
+const formatLastMovement = (value: string) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Data indisponivel';
+  }
+
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const formatBirthDate = (value: string | null) => {
+  if (!value) {
+    return '-';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  return date.toLocaleDateString('pt-BR');
+};
+
+const toInputDateValue = (value: string | null) => {
+  if (!value) return '';
+  return String(value).slice(0, 10);
+};
+
+const getPatientAge = (value: string | null) => {
+  if (!value) return '-';
+  const birthDate = new Date(value);
+  if (Number.isNaN(birthDate.getTime())) return '-';
+
+  return String(Math.max(0, new Date().getFullYear() - birthDate.getFullYear()));
 };
 
 export default function GerenciamentoPacientesPage() {
@@ -115,6 +159,7 @@ export default function GerenciamentoPacientesPage() {
       nomeCompleto: sheetPatient.nomeCompleto,
       telefone: sheetPatient.telefone,
       email: sheetPatient.email,
+      dataNascimento: sheetPatient.dataNascimento,
       status: sheetPatient.status,
       consumoAlcoolDoses: sheetPatient.consumoAlcoolDoses,
       estadoGeralSaude: sheetPatient.estadoGeralSaude,
@@ -200,34 +245,40 @@ export default function GerenciamentoPacientesPage() {
             />
           </label>
 
-          <label>
-            Risco
-            <select value={filters.risco ?? 'TODOS'} onChange={(event) => setFilters({ risco: event.target.value as typeof filters.risco })}>
-              <option value="TODOS">Todos</option>
-              <option value="ALTO">Alto</option>
-              <option value="MEDIO">Medio</option>
-              <option value="BAIXO">Baixo</option>
-            </select>
-          </label>
+          <Select
+            label="Risco"
+            value={filters.risco ?? 'TODOS'}
+            onChange={(event) => setFilters({ risco: event.target.value as typeof filters.risco })}
+            options={[
+              { value: 'TODOS', label: 'Todos' },
+              { value: 'ALTO', label: 'Alto' },
+              { value: 'MEDIO', label: 'Medio' },
+              { value: 'BAIXO', label: 'Baixo' },
+            ]}
+          />
 
-          <label>
-            Status
-            <select value={filters.status ?? 'TODOS'} onChange={(event) => setFilters({ status: event.target.value as typeof filters.status })}>
-              <option value="TODOS">Todos</option>
-              <option value="ATIVO">Ativo</option>
-              <option value="INATIVO">Inativo</option>
-            </select>
-          </label>
+          <Select
+            label="Status"
+            value={filters.status ?? 'TODOS'}
+            onChange={(event) => setFilters({ status: event.target.value as typeof filters.status })}
+            options={[
+              { value: 'TODOS', label: 'Todos' },
+              { value: 'ATIVO', label: 'Ativo' },
+              { value: 'INATIVO', label: 'Inativo' },
+            ]}
+          />
 
-          <label>
-            Data inicio
-            <input type="date" value={filters.dataInicio ?? ''} onChange={(event) => setFilters({ dataInicio: event.target.value })} />
-          </label>
+          <DatePicker
+            label="Data inicio"
+            value={filters.dataInicio ?? ''}
+            onChangeValue={(nextValue) => setFilters({ dataInicio: nextValue })}
+          />
 
-          <label>
-            Data fim
-            <input type="date" value={filters.dataFim ?? ''} onChange={(event) => setFilters({ dataFim: event.target.value })} />
-          </label>
+          <DatePicker
+            label="Data fim"
+            value={filters.dataFim ?? ''}
+            onChangeValue={(nextValue) => setFilters({ dataFim: nextValue })}
+          />
 
           <button type="button" className={styles.clearButton} onClick={resetFilters}>
             Limpar filtros
@@ -242,9 +293,10 @@ export default function GerenciamentoPacientesPage() {
                   <tr>
                     <th>Nome</th>
                     <th>CPF</th>
+                    <th>Nascimento</th>
                     <th>Risco</th>
                     <th>Status</th>
-                    <th>Atualizado em</th>
+                    <th>Ultima movimentacao</th>
                     <th>Acoes</th>
                   </tr>
                 </thead>
@@ -257,6 +309,7 @@ export default function GerenciamentoPacientesPage() {
                         </div>
                       </td>
                       <td><Skeleton width={110} height={14} /></td>
+                      <td><Skeleton width={84} height={14} /></td>
                       <td><Skeleton width={62} height={22} /></td>
                       <td><Skeleton width={62} height={22} /></td>
                       <td><Skeleton width={90} height={14} /></td>
@@ -281,9 +334,10 @@ export default function GerenciamentoPacientesPage() {
                   <tr>
                     <th>Nome</th>
                     <th>CPF</th>
+                    <th>Nascimento</th>
                     <th>Risco</th>
                     <th>Status</th>
-                    <th>Atualizado em</th>
+                    <th>Ultima movimentacao</th>
                     <th>Acoes</th>
                   </tr>
                 </thead>
@@ -292,11 +346,12 @@ export default function GerenciamentoPacientesPage() {
                     <tr key={patient.id}>
                       <td>{patient.nomeCompleto}</td>
                       <td>{patient.cpf}</td>
+                      <td>{formatBirthDate(patient.dataNascimento)}</td>
                       <td>
                         <span className={`${styles.riskTag} ${riskClass[patient.risco]}`}>{patient.risco}</span>
                       </td>
                       <td>{patient.status}</td>
-                      <td>{new Date(patient.atualizadoEm).toLocaleDateString('pt-BR')}</td>
+                      <td>{formatLastMovement(patient.atualizadoEm)}</td>
                       <td>
                         <div className={styles.actions}>
                           <button type="button" onClick={() => openDetails(patient)} aria-label="Detalhes">
@@ -330,7 +385,7 @@ export default function GerenciamentoPacientesPage() {
         {sheetMode === 'details' && sheetPatient && (
           <div className={styles.sheetDetails}>
             <p><strong>CPF:</strong> {sheetPatient.cpf}</p>
-            <p><strong>Idade:</strong> {Math.max(0, new Date().getFullYear() - new Date(sheetPatient.dataNascimento).getFullYear())} anos</p>
+            <p><strong>Idade:</strong> {getPatientAge(sheetPatient.dataNascimento)} anos</p>
             <p><strong>Risco:</strong> {sheetPatient.risco} ({Math.round(sheetPatient.probabilidadeRisco * 100)}%)</p>
             <p><strong>Biometria:</strong> IMC {sheetPatient.imc} | PA {sheetPatient.pressaoSistolica}/{sheetPatient.pressaoDiastolica}</p>
             <p><strong>Preditores:</strong> Fumante {sheetPatient.fumante ? 'Sim' : 'Nao'} | Diabetes {sheetPatient.diabetes ? 'Sim' : 'Nao'}</p>
@@ -368,16 +423,15 @@ export default function GerenciamentoPacientesPage() {
               />
             </label>
 
-            <label>
-              Status
-              <select
-                value={sheetPatient.status}
-                onChange={(event) => updateEditField('status', event.target.value as Patient['status'])}
-              >
-                <option value="ATIVO">Ativo</option>
-                <option value="INATIVO">Inativo</option>
-              </select>
-            </label>
+            <Select
+              label="Status"
+              value={sheetPatient.status}
+              onChange={(event) => updateEditField('status', event.target.value as Patient['status'])}
+              options={[
+                { value: 'ATIVO', label: 'Ativo' },
+                { value: 'INATIVO', label: 'Inativo' },
+              ]}
+            />
 
             <label>
               Altura (cm)
@@ -414,62 +468,63 @@ export default function GerenciamentoPacientesPage() {
               />
             </label>
 
-            <label>
-              Estado geral
-              <select
-                value={sheetPatient.estadoGeralSaude}
-                onChange={(event) => updateEditField('estadoGeralSaude', event.target.value as HealthOverallStatus)}
-              >
-                <option value="MUITO_BOM">Muito bom</option>
-                <option value="BOM">Bom</option>
-                <option value="ATENCAO">Atencao</option>
-                <option value="CRITICO">Critico</option>
-              </select>
-            </label>
+            <DatePicker
+              label="Data de nascimento"
+              value={toInputDateValue(sheetPatient.dataNascimento)}
+              onChangeValue={(nextValue) => updateEditField('dataNascimento', nextValue as Patient['dataNascimento'])}
+            />
 
-            <label>
-              Fumante
-              <select
-                value={sheetPatient.fumante ? 'SIM' : 'NAO'}
-                onChange={(event) => updateEditField('fumante', event.target.value === 'SIM')}
-              >
-                <option value="SIM">Sim</option>
-                <option value="NAO">Nao</option>
-              </select>
-            </label>
+            <Select
+              label="Estado geral"
+              value={sheetPatient.estadoGeralSaude}
+              onChange={(event) => updateEditField('estadoGeralSaude', event.target.value as HealthOverallStatus)}
+              options={[
+                { value: 'MUITO_BOM', label: 'Muito bom' },
+                { value: 'BOM', label: 'Bom' },
+                { value: 'ATENCAO', label: 'Atencao' },
+                { value: 'CRITICO', label: 'Critico' },
+              ]}
+            />
 
-            <label>
-              Atividade fisica
-              <select
-                value={sheetPatient.atividadeFisica ? 'SIM' : 'NAO'}
-                onChange={(event) => updateEditField('atividadeFisica', event.target.value === 'SIM')}
-              >
-                <option value="SIM">Sim</option>
-                <option value="NAO">Nao</option>
-              </select>
-            </label>
+            <Select
+              label="Fumante"
+              value={sheetPatient.fumante ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('fumante', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
 
-            <label>
-              Historico de AVC
-              <select
-                value={sheetPatient.historicoAvc ? 'SIM' : 'NAO'}
-                onChange={(event) => updateEditField('historicoAvc', event.target.value === 'SIM')}
-              >
-                <option value="SIM">Sim</option>
-                <option value="NAO">Nao</option>
-              </select>
-            </label>
+            <Select
+              label="Atividade fisica"
+              value={sheetPatient.atividadeFisica ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('atividadeFisica', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
 
-            <label>
-              Diabetes
-              <select
-                value={sheetPatient.diabetes ? 'SIM' : 'NAO'}
-                onChange={(event) => updateEditField('diabetes', event.target.value === 'SIM')}
-              >
-                <option value="SIM">Sim</option>
-                <option value="NAO">Nao</option>
-              </select>
-            </label>
+            <Select
+              label="Historico de AVC"
+              value={sheetPatient.historicoAvc ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('historicoAvc', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
+
+            <Select
+              label="Diabetes"
+              value={sheetPatient.diabetes ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('diabetes', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
 
             <div className={styles.sheetActions}>
               {editError && <p className={styles.editFeedbackError}>{editError}</p>}

@@ -8,13 +8,12 @@ const { computeRiskMetrics } = require('../services/riskService');
 const { normalizeEmail, toBoolean, toInt, toNumber } = require('../utils/parsers');
 
 const webBaseUrl = process.env.WEB_BASE_URL || 'http://localhost:3001';
-const backendBaseUrl = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
 const mobileDeepLinkBase = process.env.MOBILE_DEEP_LINK_BASE || 'clientapp://invite';
 
 function buildUrls(token) {
   const webUrl = `${webBaseUrl.replace(/\/$/, '')}/convite/aceitar?token=${token}`;
   const deepLinkUrl = `${mobileDeepLinkBase}${mobileDeepLinkBase.includes('?') ? '&' : '?'}token=${token}`;
-  const appOpenUrl = `${backendBaseUrl.replace(/\/$/, '')}/api/invites/open-app?token=${encodeURIComponent(token)}`;
+  const appOpenUrl = `${webBaseUrl.replace(/\/$/, '')}/convite/app?token=${encodeURIComponent(token)}`;
   return { webUrl, deepLinkUrl, appOpenUrl };
 }
 
@@ -423,3 +422,4 @@ exports.openAppInvite = async (req, res) => {
 
   return res.setHeader('Content-Type', 'text/html; charset=utf-8').send(html);
 };
+

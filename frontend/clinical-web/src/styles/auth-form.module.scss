@@ -115,6 +115,16 @@
   margin: 0;
 }
 
+.successIconWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.successIcon {
+  color: #16a34a;
+}
+
 .statusActions {
   margin-top: 14px;
   display: flex;

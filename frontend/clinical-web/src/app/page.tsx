@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/Layout/Sidebar/Sidebar';
 import { Header } from '@/components/Layout/Header/Header';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useAuth } from '@/hooks/useAuth';
 import { usePatients } from '@/hooks/usePatients';
 import styles from './home.module.scss';
@@ -94,19 +95,19 @@ export default function Home() {
           <section className={styles.metricsGrid}>
             <article className={styles.card}>
               <h3>Total de Pacientes</h3>
-              <strong>{isLoading ? '--' : summary.total}</strong>
+              <strong>{isLoading ? <Spinner size="md" className={styles.metricSpinner} /> : summary.total}</strong>
               <p>{isLoading ? 'Carregando dados...' : 'Base atualizada pela API'}</p>
             </article>
 
             <article className={styles.card}>
               <h3>Pacientes Ativos</h3>
-              <strong>{isLoading ? '--' : summary.ativos}</strong>
+              <strong>{isLoading ? <Spinner size="md" className={styles.metricSpinner} /> : summary.ativos}</strong>
               <p>{isLoading ? 'Carregando dados...' : 'Status ativo no cadastro'}</p>
             </article>
 
             <article className={`${styles.card} ${styles.warnCard}`}>
               <h3>Alertas de Risco Alto</h3>
-              <strong>{isLoading ? '--' : summary.altoRisco}</strong>
+              <strong>{isLoading ? <Spinner size="md" className={styles.metricSpinner} /> : summary.altoRisco}</strong>
               <p>{isLoading ? 'Carregando dados...' : 'Pacientes com risco ALTO'}</p>
             </article>
 
@@ -136,7 +137,12 @@ export default function Home() {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={4} className={styles.tableState}>Carregando pacientes...</td>
+                      <td colSpan={4} className={styles.tableState}>
+                        <span className={styles.loadingInline}>
+                          <Spinner size="sm" />
+                          Carregando pacientes...
+                        </span>
+                      </td>
                     </tr>
                   ) : displayedPatients.length === 0 ? (
                     <tr>
