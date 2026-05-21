@@ -100,18 +100,18 @@ def exemplo():
     
     novo_paciente = {
         'HighBP': 1.0,                  # pressão alta 0/1
-        'HighChol': 1.0,                # colesterol 0/1
-        'BMI': 30.0,                    # IMC
-        'Smoker': 1.0,                  # fumante 0/1
+        'HighChol': 0.0,                # colesterol 0/1
+        'BMI': 22.0,                    # IMC
+        'Smoker': 0.0,                  # fumante 0/1
         'Stroke': 0.0,                  # histórico de AVC 0/1
-        'HeartDiseaseorAttack': 0.0,    # doença cardíaca 0/1
+        'HeartDiseaseorAttack': 1.0,    # doença cardíaca 0/1
         'PhysActivity': 1.0,            # faz atividades físicas 0/1
-        'Fruits': 0.0,                  # come frutas 0/1
-        'Veggies': 0.0,                 # come vegetais 0/1
-        'HvyAlcoholConsump': 0.0,       # consumo de álcool 0/1
+        'Fruits': 1.0,                  # come frutas 0/1
+        'Veggies': 1.0,                 # come vegetais 0/1
+        'HvyAlcoholConsump': 1.0,       # consumo de álcool 0/1
         'DiffWalk': 0.0,                # mobilidade reduzida 0/1
         'Sex': 1.0,                     # masculino ou feminino 1/0
-        'Age': 6.0                     # idade
+        'Age': 3.0                     # idade 1 = 18-24 | 9 = 60-64 | 13 = 80 or older
     }
     
     print("\nDados do paciente:")

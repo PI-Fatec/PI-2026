@@ -10,12 +10,15 @@ warnings.filterwarnings('ignore')
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (classification_report, roc_auc_score)
+from sklearn.metrics import (
+    classification_report, 
+    roc_auc_score,
+    confusion_matrix
+)
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, davies_bouldin_score
 
 
-# Colunas SELECIONADAS P/ criação do modelo
 FEATURES = [
     'HighBP','HighChol','BMI','Smoker','Stroke',
     'HeartDiseaseorAttack','PhysActivity','Fruits',
@@ -23,8 +26,8 @@ FEATURES = [
 ]
 
 
-# 1 Coleta dos dados
-def load_and_explore_data(filepath, sample_size=30000): # Limitado a 30k linhas p/ evitar lentidão e economizar espaço
+# 1 Coleta
+def load_and_explore_data(filepath, sample_size=7000):
     df = pd.read_csv(filepath)
     
     print(f"\nDataset original: {df.shape}")
@@ -38,15 +41,15 @@ def load_and_explore_data(filepath, sample_size=30000): # Limitado a 30k linhas 
     return df
 
 
-# 2 Limpeza e tratamento dos dados
+# 2 Tratamento
 def treat_data(df):
     df = df.drop_duplicates()
     df = df.fillna(df.median())
     return df
 
 
-# 3 Pré-processamento dos dados
-def preprocess_data(df, target_col='Diabetes_012'):
+# 3 Pré-processamento
+def preprocess_data(df, target_col='Diabetes_binary'):
     
     X = df[FEATURES]
     y = (df[target_col] > 0).astype(int)
@@ -62,24 +65,35 @@ def preprocess_data(df, target_col='Diabetes_012'):
     return X_train_scaled, X_test_scaled, y_train, y_test, scaler_class
 
 
-# 4 Classificação (Supervisionado)
+# 4 Classificação
 def train_supervised_models(X_train, X_test, y_train, y_test):
     
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model = RandomForestClassifier(
+        n_estimators=200,
+        random_state=42,
+        class_weight='balanced'
+    )
+    
     model.fit(X_train, y_train)
     
-    y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
     
+    threshold = 0.5
+    y_pred = (y_prob >= threshold).astype(int)
+    
     print("\nClassificação (Supervisionado):")
+    print(f"Threshold usado: {threshold}")
     print(classification_report(y_test, y_pred))
     print("ROC-AUC:", roc_auc_score(y_test, y_prob))
+    
+    print("\nMatriz de confusão:")
+    print(confusion_matrix(y_test, y_pred))
     
     return model
 
 
-# 5 Clustering (Não supervisionado)
-def train_unsupervised_model(df, target_col='Diabetes_012'):
+# 5 Clustering
+def train_unsupervised_model(df, target_col='Diabetes_binary'):
     
     print("\n" + "="*80)
     print("Clustering (Não supervisionado)")
@@ -100,7 +114,6 @@ def train_unsupervised_model(df, target_col='Diabetes_012'):
     print(f"\nSilhouette: {sil:.4f}")
     print(f"Davies-Bouldin: {db:.4f}")
     
-    # Análise dos clusters
     df_analysis = X.copy()
     df_analysis['cluster'] = clusters
     df_analysis['risco'] = y
@@ -113,7 +126,6 @@ def train_unsupervised_model(df, target_col='Diabetes_012'):
     print("\nRisco médio por cluster:\n")
     print(risco_cluster)
     
-    # Rotular clusters com base no risco médio
     sorted_clusters = risco_cluster.sort_values()
     
     cluster_labels = {}
@@ -133,12 +145,11 @@ def train_unsupervised_model(df, target_col='Diabetes_012'):
 
 
 # 6 Main
-
 def main():
     
     print("\nIniciando pipeline")
     
-    df = load_and_explore_data("diabetes_012_health_indicators_BRFSS2015.csv")
+    df = load_and_explore_data("diabetes_binary_5050split_health_indicators_BRFSS2015.csv")
     df = treat_data(df)
     
     X_train, X_test, y_train, y_test, scaler_class = preprocess_data(df)
@@ -146,8 +157,6 @@ def main():
     model_class = train_supervised_models(X_train, X_test, y_train, y_test)
     
     kmeans, scaler_cluster, cluster_labels = train_unsupervised_model(df)
-    
-    # Salvar modelos, scalers e labels dos clusters
     
     os.makedirs("models", exist_ok=True)
     
@@ -161,7 +170,7 @@ def main():
     
     pickle.dump(FEATURES, open("models/features.pkl", "wb"))
     
-    print("\n Modelos salvos com sucesso")
+    print("\nModelos salvos com sucesso")
     
     return model_class, kmeans
 
