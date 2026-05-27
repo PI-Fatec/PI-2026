@@ -1,5 +1,4 @@
 const { prisma } = require('../lib/prisma');
-const { computeRiskMetrics } = require('../services/riskService');
 const { toBoolean, toInt, toNumber } = require('../utils/parsers');
 
 function mapPatient(item) {
@@ -31,38 +30,46 @@ function mapPatient(item) {
   };
 }
 
-function buildPatientUpdate(body, keepComputed = false) {
-  const alturaCm = toNumber(body.alturaCm, 170);
-  const pesoKg = toNumber(body.pesoKg, 70);
-  const imc = body.imc ? toNumber(body.imc, 24.2) : Number((pesoKg / Math.pow(alturaCm / 100, 2)).toFixed(1));
+function hasOwn(body, field) {
+  return Object.prototype.hasOwnProperty.call(body, field);
+}
 
-  const payload = {
-    cpf: body.cpf,
-    dataNascimento: body.dataNascimento ? new Date(body.dataNascimento) : null,
-    sexo: body.sexo,
-    telefone: body.telefone,
-    alturaCm,
-    pesoKg,
-    imc,
-    pressaoSistolica: toInt(body.pressaoSistolica, 120),
-    pressaoDiastolica: toInt(body.pressaoDiastolica, 80),
-    glicemiaMgDl: toNumber(body.glicemiaMgDl, 96),
-    fumante: toBoolean(body.fumante, false),
-    atividadeFisica: toBoolean(body.atividadeFisica, true),
-    historicoAvc: toBoolean(body.historicoAvc, false),
-    diabetes: toBoolean(body.diabetes, false),
-    consumoAlcoolDoses: toInt(body.consumoAlcoolDoses, 0),
-    estadoGeralSaude: body.estadoGeralSaude,
-    status: body.status,
-  };
-
-  const filtered = Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined));
-
-  if (keepComputed) {
-    return filtered;
+function parseOptionalDate(value) {
+  if (!value) {
+    return null;
   }
 
-  return { ...filtered, ...computeRiskMetrics(filtered) };
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function buildPatientUpdate(body) {
+  const payload = {};
+
+  if (hasOwn(body, 'cpf')) payload.cpf = String(body.cpf || '').trim();
+  if (hasOwn(body, 'dataNascimento')) payload.dataNascimento = parseOptionalDate(body.dataNascimento);
+  if (hasOwn(body, 'sexo')) payload.sexo = body.sexo;
+  if (hasOwn(body, 'telefone')) payload.telefone = String(body.telefone || '').trim();
+  if (hasOwn(body, 'alturaCm')) payload.alturaCm = toNumber(body.alturaCm, 170);
+  if (hasOwn(body, 'pesoKg')) payload.pesoKg = toNumber(body.pesoKg, 70);
+  if (hasOwn(body, 'imc')) payload.imc = toNumber(body.imc, 24.2);
+  if (!hasOwn(body, 'imc') && hasOwn(body, 'alturaCm') && hasOwn(body, 'pesoKg')) {
+    const alturaCm = toNumber(body.alturaCm, 170);
+    const pesoKg = toNumber(body.pesoKg, 70);
+    payload.imc = Number((pesoKg / Math.pow(alturaCm / 100, 2)).toFixed(1));
+  }
+  if (hasOwn(body, 'pressaoSistolica')) payload.pressaoSistolica = toInt(body.pressaoSistolica, 120);
+  if (hasOwn(body, 'pressaoDiastolica')) payload.pressaoDiastolica = toInt(body.pressaoDiastolica, 80);
+  if (hasOwn(body, 'glicemiaMgDl')) payload.glicemiaMgDl = toNumber(body.glicemiaMgDl, 96);
+  if (hasOwn(body, 'fumante')) payload.fumante = toBoolean(body.fumante, false);
+  if (hasOwn(body, 'atividadeFisica')) payload.atividadeFisica = toBoolean(body.atividadeFisica, true);
+  if (hasOwn(body, 'historicoAvc')) payload.historicoAvc = toBoolean(body.historicoAvc, false);
+  if (hasOwn(body, 'diabetes')) payload.diabetes = toBoolean(body.diabetes, false);
+  if (hasOwn(body, 'consumoAlcoolDoses')) payload.consumoAlcoolDoses = toInt(body.consumoAlcoolDoses, 0);
+  if (hasOwn(body, 'estadoGeralSaude')) payload.estadoGeralSaude = body.estadoGeralSaude;
+  if (hasOwn(body, 'status')) payload.status = body.status;
+
+  return payload;
 }
 
 exports.listPatients = async (req, res) => {

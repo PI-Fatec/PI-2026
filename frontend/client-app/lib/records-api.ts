@@ -1,5 +1,5 @@
 import { apiRequest } from '@/lib/api';
-import { HealthRecord, HealthRecordType, UpsertHealthRecordInput } from '@/types/record';
+import { HealthRecord, UpsertHealthRecordInput } from '@/types/record';
 
 export const recordsApi = {
   list(token: string) {

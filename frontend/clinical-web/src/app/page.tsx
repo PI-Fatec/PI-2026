@@ -7,6 +7,7 @@ import { Header } from '@/components/Layout/Header/Header';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useAuth } from '@/hooks/useAuth';
 import { usePatients } from '@/hooks/usePatients';
+import { useSidebarState } from '@/hooks/useSidebarState';
 import styles from './home.module.scss';
 
 const riskLabel = {
@@ -48,7 +49,7 @@ export default function Home() {
   const { session, logout } = useAuth();
   const { patients, summary, isLoading, error } = usePatients();
   const [visiblePatients, setVisiblePatients] = useState(5);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isSidebarOpen, closeSidebar, toggleSidebar } = useSidebarState({ defaultOpen: false });
 
   const role = session?.role ?? 'DOCTOR';
 
@@ -78,16 +79,17 @@ export default function Home() {
         userName={session?.name ?? 'Usuario'}
         onLogout={handleLogout}
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={closeSidebar}
       />
 
-      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={() => setIsSidebarOpen(false)} />}
+      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={closeSidebar} />}
 
       <main className={styles.main}>
         <Header
           userName={session?.name ?? 'Usuario'}
           role={role}
-          onMenuClick={() => setIsSidebarOpen(true)}
+          isSidebarOpen={isSidebarOpen}
+          onMenuClick={toggleSidebar}
           onLogout={handleLogout}
         />
 

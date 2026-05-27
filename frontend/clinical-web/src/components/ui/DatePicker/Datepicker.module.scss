@@ -7,10 +7,9 @@
 }
 
 .label {
-  color: #17406a;
+  color: var(--portal-primary, #475569);
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.2px;
 }
 
 .trigger {
@@ -19,24 +18,25 @@
   align-items: center;
   justify-content: space-between;
   height: 44px;
-  border: 1px solid #cfdceb;
+  border: 1px solid var(--portal-border, #dbe4ee);
   border-radius: 12px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  background: var(--portal-input, #f8fafc);
   padding: 0 12px;
-  color: #223b5a;
+  color: var(--portal-text, #223b5a);
   font-size: 0.9rem;
   box-shadow: 0 1px 2px rgba(15, 34, 58, 0.05);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   cursor: pointer;
 
   &:hover {
-    border-color: #aac2de;
+    border-color: var(--portal-border-strong, #cbd5e1);
+    background: var(--portal-surface, #ffffff);
   }
 
   &:focus {
     outline: none;
-    border-color: #2e74b4;
-    box-shadow: 0 0 0 4px rgba(46, 116, 180, 0.14);
+    border-color: var(--portal-focus-border, rgba(71, 85, 105, 0.28));
+    box-shadow: 0 0 0 4px var(--portal-focus-ring, rgba(71, 85, 105, 0.14));
     transform: translateY(-1px);
   }
 
@@ -58,11 +58,11 @@
 }
 
 .placeholder {
-  color: #7890ad;
+  color: var(--portal-muted, #64748b);
 }
 
 .value {
-  color: #223b5a;
+  color: var(--portal-text, #223b5a);
 }
 
 .modal {
@@ -71,9 +71,9 @@
   left: 0;
   z-index: 100;
   width: 300px;
-  border: 1px solid #d6e1f0;
+  border: 1px solid var(--portal-border, #d6e1f0);
   border-radius: 14px;
-  background: #fff;
+  background: var(--portal-surface, #ffffff);
   box-shadow: 0 18px 34px rgba(13, 34, 58, 0.16);
   padding: 12px;
 }
@@ -94,7 +94,7 @@
 .switchButton {
   border: none;
   background: transparent;
-  color: #173c67;
+  color: var(--portal-text, #334155);
   font-size: 0.88rem;
   font-weight: 700;
   text-transform: capitalize;
@@ -103,7 +103,7 @@
   padding: 3px 6px;
 
   &:hover {
-    background: #f0f6ff;
+    background: var(--portal-hover, #f1f5f9);
   }
 }
 
@@ -111,9 +111,9 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  border: 1px solid #d1deee;
-  background: #f8fbff;
-  color: #214a77;
+  border: 1px solid var(--portal-border, #d1deee);
+  background: var(--portal-surface-muted, #f8fafc);
+  color: var(--portal-primary, #475569);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -130,7 +130,7 @@
   text-align: center;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #6f87a4;
+  color: var(--portal-muted, #64748b);
 }
 
 .daysGrid {
@@ -144,20 +144,20 @@
   border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
-  color: #2a4668;
+  color: var(--portal-text, #334155);
   font-size: 0.82rem;
   cursor: pointer;
 
   &:hover {
-    background: #eff5fd;
-    border-color: #d4e0ef;
+    background: var(--portal-hover, #f1f5f9);
+    border-color: var(--portal-border, #d4e0ef);
   }
 }
 
 .daySelected {
-  background: #1f66aa !important;
+  background: var(--portal-primary, #475569) !important;
   color: #fff !important;
-  border-color: #1f66aa !important;
+  border-color: var(--portal-primary, #475569) !important;
 }
 
 .pickerGrid {
@@ -169,14 +169,23 @@
 .pickerButton {
   height: 34px;
   border-radius: 8px;
-  border: 1px solid #d8e3f1;
-  background: #f8fbff;
-  color: #214a77;
+  border: 1px solid var(--portal-border, #d8e3f1);
+  background: var(--portal-surface-muted, #f8fafc);
+  color: var(--portal-text, #334155);
   font-size: 0.82rem;
   cursor: pointer;
   text-transform: capitalize;
 
   &:hover {
-    background: #edf5ff;
+    background: var(--portal-hover, #f1f5f9);
   }
+}
+
+:global([data-portal-theme='dark']) .modal {
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.42);
+}
+
+:global([data-portal-theme='dark']) .trigger:hover,
+:global([data-portal-theme='dark']) .trigger:focus {
+  background: var(--portal-surface-muted);
 }

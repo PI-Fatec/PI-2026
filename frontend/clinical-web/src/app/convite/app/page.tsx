@@ -60,7 +60,7 @@ export default function OpenInviteInAppPage() {
         </a>
         <Link
           href={webFallbackUrl}
-          style={{ background: '#1d4ed8', color: '#fff', borderRadius: 8, padding: '10px 14px', textDecoration: 'none', fontWeight: 600 }}
+          style={{ background: '#475569', color: '#fff', borderRadius: 8, padding: '10px 14px', textDecoration: 'none', fontWeight: 600 }}
         >
           Continuar no portal web
         </Link>

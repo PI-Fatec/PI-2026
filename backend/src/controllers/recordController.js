@@ -1,5 +1,11 @@
 const { prisma } = require('../lib/prisma');
 
+const ALLOWED_RECORD_TYPES = new Set(['glicemia', 'pressao_arterial', 'exame', 'prontuario', 'predicao_risco']);
+
+function isValidRecordType(type) {
+  return typeof type === 'string' && ALLOWED_RECORD_TYPES.has(type);
+}
+
 exports.listRecords = async (req, res) => {
   try {
     const requestedPatientId = req.query.patientUserId ? String(req.query.patientUserId) : null;
@@ -23,6 +29,10 @@ exports.listRecords = async (req, res) => {
 
 exports.createRecord = async (req, res) => {
   try {
+    if (!isValidRecordType(req.body.type)) {
+      return res.status(400).json({ error: 'Tipo de registro invalido.' });
+    }
+
     const requestedPatientId = req.body.patientUserId ? String(req.body.patientUserId) : null;
     const patientUserId = req.auth.role === 'PATIENT' ? req.auth.userId : requestedPatientId;
 
@@ -61,6 +71,10 @@ exports.updateRecord = async (req, res) => {
 
     if (req.auth.role === 'PATIENT' && current.patientUserId !== req.auth.userId) {
       return res.status(403).json({ error: 'Sem permissao para editar este registro.' });
+    }
+
+    if (req.body.type && !isValidRecordType(req.body.type)) {
+      return res.status(400).json({ error: 'Tipo de registro invalido.' });
     }
 
     const updated = await prisma.healthRecord.update({

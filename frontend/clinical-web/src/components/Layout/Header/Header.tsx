@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Bell, Menu, Search, SlidersHorizontal, LogOut, UserRound } from 'lucide-react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Search, SlidersHorizontal, LogOut, UserRound, PanelLeftClose, PanelLeftOpen, Moon, Sun } from 'lucide-react';
+import { usePortalTheme } from '@/hooks/usePortalTheme';
 import { UserRole } from '@/types/auth';
 import styles from './Header.module.scss';
 
@@ -10,6 +12,7 @@ interface HeaderProps {
   role: UserRole;
   onMenuClick?: () => void;
   onLogout?: () => void;
+  isSidebarOpen?: boolean;
 }
 
 const roleLabel: Record<UserRole, string> = {
@@ -26,9 +29,16 @@ const getInitials = (name: string) =>
     .map((chunk) => chunk[0]?.toUpperCase() ?? '')
     .join('');
 
-export const Header = ({ userName, role, onMenuClick, onLogout }: HeaderProps) => {
+export const Header = ({ userName, role, onMenuClick, onLogout, isSidebarOpen = false }: HeaderProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { theme, toggleTheme } = usePortalTheme();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const SidebarIcon = isSidebarOpen ? PanelLeftClose : PanelLeftOpen;
+  const ThemeIcon = theme === 'dark' ? Sun : Moon;
+  const currentSearch = pathname === '/pacientes/gerenciamento' ? searchParams.get('busca') ?? '' : '';
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -44,21 +54,51 @@ export const Header = ({ userName, role, onMenuClick, onLogout }: HeaderProps) =
     };
   }, []);
 
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const query = String(formData.get('busca') ?? '').trim();
+    router.push(query ? `/pacientes/gerenciamento?busca=${encodeURIComponent(query)}` : '/pacientes/gerenciamento');
+  };
+
   return (
     <header className={styles.header}>
-      <button type="button" className={styles.menuButton} aria-label="Abrir menu" onClick={onMenuClick}>
-        <Menu size={20} />
+      <button
+        type="button"
+        className={styles.menuButton}
+        aria-label={isSidebarOpen ? 'Recolher menu' : 'Expandir menu'}
+        aria-expanded={isSidebarOpen}
+        onClick={onMenuClick}
+      >
+        <SidebarIcon size={20} />
       </button>
 
-      <label className={styles.searchField} aria-label="Pesquisar paciente ou prontuario">
-        <Search size={18} />
-        <input type="text" placeholder="Pesquisar paciente ou prontuario..." />
-      </label>
+      <form
+        key={`${pathname}-${currentSearch}`}
+        className={styles.searchField}
+        aria-label="Pesquisar paciente ou prontuario"
+        onSubmit={handleSearchSubmit}
+      >
+        <button type="submit" className={styles.searchButton} aria-label="Buscar paciente">
+          <Search size={18} />
+        </button>
+        <input
+          type="search"
+          name="busca"
+          defaultValue={currentSearch}
+          placeholder="Pesquisar paciente ou prontuario..."
+        />
+      </form>
 
       <div className={styles.actions}>
-        <button type="button" className={styles.iconButton} aria-label="Notificacoes">
-          <Bell size={17} />
-          <span className={styles.dot} />
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
+          onClick={toggleTheme}
+        >
+          <ThemeIcon size={17} />
         </button>
 
         <button type="button" className={styles.iconButton} aria-label="Filtros">
@@ -84,7 +124,14 @@ export const Header = ({ userName, role, onMenuClick, onLogout }: HeaderProps) =
 
           {isProfileMenuOpen && (
             <div className={styles.profileMenu} role="menu" aria-label="Menu de perfil">
-              <button type="button" role="menuitem" onClick={() => setIsProfileMenuOpen(false)}>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  router.push('/configuracoes/conta');
+                }}
+              >
                 <UserRound size={15} />
                 Meu perfil
               </button>

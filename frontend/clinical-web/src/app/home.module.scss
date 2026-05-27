@@ -5,10 +5,13 @@
 }
 
 .backdrop {
+  display: none;
   position: fixed;
   inset: 0;
   border: none;
-  background: rgba(15, 27, 47, 0.4);
+  background: rgba(12, 18, 28, 0.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   z-index: 50;
 }
 
@@ -98,10 +101,10 @@
 }
 
 .loadMoreButton {
-  border: 1px solid #c8d8ef;
+  border: 1px solid var(--portal-border, #c8d8ef);
   border-radius: 999px;
-  background: #f6faff;
-  color: $blue-primary;
+  background: var(--portal-surface-muted, #f6faff);
+  color: var(--portal-primary, #475569);
   font-size: 0.84rem;
   font-weight: 700;
   padding: 9px 16px;
@@ -109,8 +112,8 @@
   transition: all $transition;
 
   &:hover:not(:disabled) {
-    border-color: #9ab8df;
-    background: #e8f2ff;
+    border-color: var(--portal-border-strong, #cbd5e1);
+    background: var(--portal-hover, #e8f2ff);
   }
 
   &:disabled {
@@ -134,7 +137,7 @@
   button {
     border: none;
     border-radius: 8px;
-    background: #0f4177;
+    background: var(--portal-primary, #475569);
     color: $white;
     font-size: 0.82rem;
     font-weight: 600;
@@ -142,7 +145,7 @@
     cursor: pointer;
 
     &:hover {
-      background: #0b3461;
+      background: var(--portal-muted-strong, #334155);
     }
   }
 }
@@ -336,6 +339,76 @@
   .contentGrid {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 960px) {
+  .backdrop {
+    display: block;
+  }
+}
+
+:global([data-portal-theme='dark']) .shell {
+  background: var(--portal-bg);
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .card,
+:global([data-portal-theme='dark']) .panel {
+  background: var(--portal-surface);
+  border-color: var(--portal-border);
+}
+
+:global([data-portal-theme='dark']) .card h3,
+:global([data-portal-theme='dark']) .card strong,
+:global([data-portal-theme='dark']) .patientsHeader h2,
+:global([data-portal-theme='dark']) .sidePanel h3,
+:global([data-portal-theme='dark']) .nameCell strong {
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .card p,
+:global([data-portal-theme='dark']) .placeholderText,
+:global([data-portal-theme='dark']) .tableState,
+:global([data-portal-theme='dark']) .nameCell span {
+  color: var(--portal-muted);
+}
+
+:global([data-portal-theme='dark']) .warnCard {
+  background: rgba(127, 29, 29, 0.22);
+  border-color: rgba(248, 113, 113, 0.28);
+}
+
+:global([data-portal-theme='dark']) .table thead th {
+  background: var(--portal-surface-muted);
+  color: var(--portal-primary);
+}
+
+:global([data-portal-theme='dark']) .table tbody td {
+  border-color: var(--portal-border);
+  color: var(--portal-muted-strong);
+}
+
+:global([data-portal-theme='dark']) .patientsHeader,
+:global([data-portal-theme='dark']) .patientsFooter {
+  border-color: var(--portal-border);
+}
+
+:global([data-portal-theme='dark']) .placeholderBox,
+:global([data-portal-theme='dark']) .insight {
+  background: var(--portal-surface-muted);
+  border-color: var(--portal-border);
+  color: var(--portal-muted);
+}
+
+:global([data-portal-theme='dark']) .patientsHeader button {
+  background: var(--portal-primary);
+  color: var(--portal-bg);
+}
+
+:global([data-portal-theme='dark']) .loadMoreButton {
+  background: var(--portal-surface-muted);
+  border-color: var(--portal-border);
+  color: var(--portal-primary);
 }
 
 @media (max-width: 960px) {

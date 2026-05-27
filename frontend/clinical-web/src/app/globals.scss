@@ -19,6 +19,57 @@
   --color-gray-200: #{$gray-200};
   --color-gray-300: #{$gray-300};
   --color-gray-400: #{$gray-400};
+
+  --portal-bg: #f3f5f8;
+  --portal-surface: #ffffff;
+  --portal-surface-muted: #f8fafc;
+  --portal-header-bg: #ffffff;
+  --portal-sidebar-bg: rgba(255, 255, 255, 0.68);
+  --portal-sidebar-border: rgba(148, 163, 184, 0.32);
+  --portal-sidebar-text: #1e293b;
+  --portal-sidebar-muted: #475569;
+  --portal-sidebar-hover: rgba(15, 23, 42, 0.06);
+  --portal-sidebar-active-bg: rgba(71, 85, 105, 0.12);
+  --portal-sidebar-mark-bg: rgba(15, 23, 42, 0.04);
+  --portal-sidebar-logo-bg: transparent;
+  --portal-border: #e2e8f0;
+  --portal-border-strong: #cbd5e1;
+  --portal-text: #1f2f4d;
+  --portal-muted: #64748b;
+  --portal-muted-strong: #475569;
+  --portal-primary: #475569;
+  --portal-active-bg: #e2e8f0;
+  --portal-hover: #f1f5f9;
+  --portal-input: #f8fafc;
+  --portal-focus-border: rgba(71, 85, 105, 0.28);
+  --portal-focus-ring: rgba(71, 85, 105, 0.14);
+}
+
+:root[data-portal-theme='dark'] {
+  color-scheme: dark;
+  --portal-bg: #0f172a;
+  --portal-surface: #111827;
+  --portal-surface-muted: #1e293b;
+  --portal-header-bg: rgba(15, 23, 42, 0.88);
+  --portal-sidebar-bg: rgba(2, 6, 23, 0.68);
+  --portal-sidebar-border: rgba(148, 163, 184, 0.2);
+  --portal-sidebar-text: #f8fafc;
+  --portal-sidebar-muted: #cbd5e1;
+  --portal-sidebar-hover: rgba(148, 163, 184, 0.14);
+  --portal-sidebar-active-bg: rgba(248, 250, 252, 0.16);
+  --portal-sidebar-mark-bg: rgba(248, 250, 252, 0.12);
+  --portal-sidebar-logo-bg: transparent;
+  --portal-border: #263449;
+  --portal-border-strong: #334155;
+  --portal-text: #e5edf7;
+  --portal-muted: #94a3b8;
+  --portal-muted-strong: #cbd5e1;
+  --portal-primary: #cbd5e1;
+  --portal-active-bg: rgba(148, 163, 184, 0.18);
+  --portal-hover: rgba(148, 163, 184, 0.12);
+  --portal-input: #172033;
+  --portal-focus-border: rgba(203, 213, 225, 0.42);
+  --portal-focus-ring: rgba(148, 163, 184, 0.16);
 }
 
 html,
@@ -29,6 +80,19 @@ body {
   margin: 0;
   font-family: var(--font-inter), sans-serif;
   color: #171717;
+}
+
+:root[data-portal-theme='dark'] body {
+  background: var(--portal-bg);
+  color: var(--portal-text);
+}
+
+:root[data-portal-theme='dark'] input[type='date'] {
+  color-scheme: dark;
+}
+
+:root[data-portal-theme='dark'] input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.72);
 }
 
 * {

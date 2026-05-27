@@ -1,7 +1,42 @@
 const bcrypt = require('bcrypt');
 const { prisma } = require('../lib/prisma');
 const { signAuthToken } = require('../services/tokenService');
-const { normalizeEmail } = require('../utils/parsers');
+const { normalizeEmail, toBoolean, toInt, toNumber } = require('../utils/parsers');
+
+function parseOptionalDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function buildPatientProfilePayload(body) {
+  const alturaCm = toNumber(body.alturaCm, 170);
+  const pesoKg = toNumber(body.pesoKg, 70);
+  const imc = body.imc ? toNumber(body.imc, 24.2) : Number((pesoKg / Math.pow(alturaCm / 100, 2)).toFixed(1));
+
+  return {
+    cpf: String(body.cpf || '').trim(),
+    dataNascimento: parseOptionalDate(body.dataNascimento),
+    sexo: body.sexo || 'Outro',
+    telefone: String(body.telefone || '').trim(),
+    alturaCm,
+    pesoKg,
+    imc,
+    pressaoSistolica: toInt(body.pressaoSistolica, 120),
+    pressaoDiastolica: toInt(body.pressaoDiastolica, 80),
+    glicemiaMgDl: toNumber(body.glicemiaMgDl, 96),
+    fumante: toBoolean(body.fumante, false),
+    atividadeFisica: toBoolean(body.atividadeFisica, true),
+    historicoAvc: toBoolean(body.historicoAvc, false),
+    diabetes: toBoolean(body.diabetes, false),
+    consumoAlcoolDoses: toInt(body.consumoAlcoolDoses, 0),
+    estadoGeralSaude: body.estadoGeralSaude || 'BOM',
+    status: body.status || 'ATIVO',
+  };
+}
 
 exports.registerSelf = async (req, res) => {
   try {
@@ -10,16 +45,20 @@ exports.registerSelf = async (req, res) => {
     const password = String(req.body.password || '');
     const name = String(req.body.name || '').trim();
 
-    if (role !== 'DOCTOR') {
-      return res.status(403).json({ error: 'Auto-cadastro permitido somente para medico.' });
+    if (!['DOCTOR', 'PATIENT'].includes(role)) {
+      return res.status(403).json({ error: 'Auto-cadastro permitido somente para medico ou cliente.' });
     }
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Nome, e-mail e senha sao obrigatorios.' });
     }
 
-    if (!req.body.crm) {
+    if (role === 'DOCTOR' && !req.body.crm) {
       return res.status(400).json({ error: 'CRM e obrigatorio para medico.' });
+    }
+
+    if (role === 'PATIENT' && !req.body.cpf) {
+      return res.status(400).json({ error: 'CPF e obrigatorio para cliente.' });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -37,17 +76,26 @@ exports.registerSelf = async (req, res) => {
         role,
         isActive: true,
         accountStatus: 'ACTIVE',
-      },
-    });
-
-    await prisma.doctorProfile.create({
-      data: {
-        userId: created.id,
-        telefone: String(req.body.telefone || '').trim(),
-        crm: String(req.body.crm || '').trim(),
-        especialidade: String(req.body.especialidade || '').trim(),
-        clinica: String(req.body.clinica || '').trim(),
-        status: req.body.status || 'ATIVO',
+        ...(role === 'PATIENT'
+          ? {
+              patientProfile: {
+                create: buildPatientProfilePayload(req.body),
+              },
+            }
+          : {}),
+        ...(role === 'DOCTOR'
+          ? {
+              doctorProfile: {
+                create: {
+                  telefone: String(req.body.telefone || '').trim(),
+                  crm: String(req.body.crm || '').trim(),
+                  especialidade: String(req.body.especialidade || '').trim(),
+                  clinica: String(req.body.clinica || '').trim(),
+                  status: req.body.status || 'ATIVO',
+                },
+              },
+            }
+          : {}),
       },
     });
 

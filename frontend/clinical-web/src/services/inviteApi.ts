@@ -1,6 +1,11 @@
 import { apiRequest } from '@/services/apiClient';
 import { RegisterInput } from '@/types/auth';
 
+type AcceptInviteInput = Omit<RegisterInput, 'role'> & {
+  token: string;
+  role: 'DOCTOR' | 'PATIENT';
+};
+
 export interface InviteValidationResponse {
   valid: boolean;
   role: 'DOCTOR' | 'PATIENT';
@@ -16,7 +21,7 @@ export const inviteApi = {
     });
   },
 
-  accept(payload: RegisterInput & { token: string }) {
+  accept(payload: AcceptInviteInput) {
     return apiRequest<{ token: string; user: { id: string; name: string; email: string; role: 'ADMIN' | 'DOCTOR' | 'PATIENT' } }>(
       '/api/invites/accept',
       {

@@ -11,6 +11,7 @@
   border: none;
   background: rgba(15, 23, 42, 0.5);
   pointer-events: auto;
+  z-index: 0;
 }
 
 .sheet {
@@ -19,29 +20,30 @@
   top: 0;
   height: 100vh;
   width: min(100%, 520px);
-  background: #ffffff;
-  border-left: 1px solid #d9e2ec;
+  background: var(--portal-surface, #ffffff);
+  border-left: 1px solid var(--portal-border, #d9e2ec);
   box-shadow: -22px 0 42px rgba(15, 23, 42, 0.2);
   display: flex;
   flex-direction: column;
   pointer-events: auto;
+  z-index: 1;
 
   header {
     padding: 16px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--portal-border, #edf2f7);
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
 
     h2 {
-      color: #0f447a;
+      color: var(--portal-text, #1e293b);
       font-size: 1.1rem;
     }
 
     p {
       margin-top: 4px;
-      color: #64748b;
+      color: var(--portal-muted, #64748b);
       font-size: 0.84rem;
     }
 
@@ -49,9 +51,9 @@
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      border: 1px solid #d4deea;
-      background: #f8fafc;
-      color: #0f447a;
+      border: 1px solid var(--portal-border, #d4deea);
+      background: var(--portal-surface-muted, #f8fafc);
+      color: var(--portal-primary, #475569);
       cursor: pointer;
       display: inline-flex;
       align-items: center;

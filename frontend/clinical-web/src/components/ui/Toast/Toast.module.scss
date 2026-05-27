@@ -25,7 +25,7 @@
   border-radius: 12px;
   border: 1px solid;
   box-shadow: 0 10px 24px rgba(11, 18, 32, 0.16);
-  background: #ffffff;
+  background: var(--portal-surface, #ffffff);
   transition: transform 180ms ease;
 }
 
@@ -86,8 +86,8 @@
 }
 
 .info {
-  border-color: #b8c9f8;
-  color: #1d4ed8;
+  border-color: #cbd5e1;
+  color: #475569;
 }
 
 .top-left {
@@ -120,6 +120,35 @@
 .bottom-right {
   bottom: 16px;
   right: 16px;
+}
+
+:global([data-portal-theme='dark']) .toast {
+  background: var(--portal-surface);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35);
+}
+
+:global([data-portal-theme='dark']) .closeButton:hover {
+  background: rgba(148, 163, 184, 0.16);
+}
+
+:global([data-portal-theme='dark']) .success {
+  border-color: rgba(74, 222, 128, 0.34);
+  color: #bbf7d0;
+}
+
+:global([data-portal-theme='dark']) .error {
+  border-color: rgba(248, 113, 113, 0.34);
+  color: #fecaca;
+}
+
+:global([data-portal-theme='dark']) .warning {
+  border-color: rgba(251, 191, 36, 0.34);
+  color: #fde68a;
+}
+
+:global([data-portal-theme='dark']) .info {
+  border-color: rgba(203, 213, 225, 0.34);
+  color: #cbd5e1;
 }
 
 .top-left.closed .toast,

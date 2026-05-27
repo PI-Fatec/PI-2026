@@ -5,10 +5,13 @@
 }
 
 .backdrop {
+  display: none;
   position: fixed;
   inset: 0;
   border: none;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(12, 18, 28, 0.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   z-index: 50;
 }
 
@@ -26,7 +29,7 @@
   gap: 10px;
 
   h1 {
-    color: #073b70;
+    color: var(--portal-primary, #475569);
     font-size: 1.8rem;
   }
 
@@ -38,7 +41,7 @@
   button {
     border: none;
     border-radius: 10px;
-    background: #0f447a;
+    background: var(--portal-primary, #475569);
     color: #fff;
     font-weight: 700;
     padding: 11px 14px;
@@ -67,7 +70,7 @@
   strong {
     margin-top: 4px;
     display: block;
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
     font-size: 1.5rem;
   }
 }
@@ -87,7 +90,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    color: #0f3f6b;
+    color: var(--portal-primary, #475569);
     font-size: 0.82rem;
     font-weight: 600;
   }
@@ -102,17 +105,17 @@
 
     &:focus {
       outline: none;
-      border-color: #0f447a;
+      border-color: var(--portal-focus-border, rgba(71, 85, 105, 0.28));
     }
   }
 }
 
 .clearButton {
   height: 40px;
-  border: 1px solid #c4d2e1;
+  border: 1px solid var(--portal-border, #c4d2e1);
   border-radius: 8px;
-  background: #f8fafc;
-  color: #0f447a;
+  background: var(--portal-surface-muted, #f8fafc);
+  color: var(--portal-primary, #475569);
   font-weight: 700;
   cursor: pointer;
   padding: 0 12px;
@@ -145,7 +148,7 @@
 
   th {
     background: #f8fafc;
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -186,7 +189,7 @@
     border-radius: 8px;
     border: 1px solid #d4deea;
     background: #f8fafc;
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -234,7 +237,7 @@
   }
 
   strong {
-    color: #0f3f6b;
+    color: var(--portal-primary, #475569);
   }
 }
 
@@ -247,7 +250,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    color: #0f3f6b;
+    color: var(--portal-primary, #475569);
     font-size: 0.82rem;
     font-weight: 600;
   }
@@ -278,7 +281,7 @@
     font-weight: 700;
     border: 1px solid #d4deea;
     background: #f8fafc;
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
     cursor: pointer;
   }
 }
@@ -292,7 +295,7 @@
 
 .saveEditButton {
   border: none !important;
-  background: #0f447a !important;
+  background: var(--portal-primary, #475569) !important;
   color: #fff !important;
 }
 
@@ -321,4 +324,75 @@
   .sheetEditGrid {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 960px) {
+  .backdrop {
+    display: block;
+  }
+}
+
+:global([data-portal-theme='dark']) .shell {
+  background: var(--portal-bg);
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .pageHeader h1,
+:global([data-portal-theme='dark']) .sheetDetails strong {
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .pageHeader p,
+:global([data-portal-theme='dark']) .loading,
+:global([data-portal-theme='dark']) .sheetDetails p {
+  color: var(--portal-muted);
+}
+
+:global([data-portal-theme='dark']) .metrics article,
+:global([data-portal-theme='dark']) .filtersCard,
+:global([data-portal-theme='dark']) .tableCard {
+  background: var(--portal-surface);
+  border-color: var(--portal-border);
+}
+
+:global([data-portal-theme='dark']) .metrics span {
+  color: var(--portal-muted);
+}
+
+:global([data-portal-theme='dark']) .metrics strong,
+:global([data-portal-theme='dark']) .filtersCard label {
+  color: var(--portal-primary);
+}
+
+:global([data-portal-theme='dark']) .filtersCard input,
+:global([data-portal-theme='dark']) .filtersCard select,
+:global([data-portal-theme='dark']) .sheetEditGrid input,
+:global([data-portal-theme='dark']) .sheetEditGrid select {
+  background: var(--portal-input);
+  border-color: var(--portal-border);
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .tableWrapper th {
+  background: var(--portal-surface-muted);
+  color: var(--portal-primary);
+}
+
+:global([data-portal-theme='dark']) .tableWrapper td {
+  border-color: var(--portal-border);
+  color: var(--portal-muted-strong);
+}
+
+:global([data-portal-theme='dark']) .clearButton,
+:global([data-portal-theme='dark']) .actions button,
+:global([data-portal-theme='dark']) .sheetActions button {
+  background: var(--portal-surface-muted);
+  border-color: var(--portal-border);
+  color: var(--portal-primary);
+}
+
+:global([data-portal-theme='dark']) .pageHeader button,
+:global([data-portal-theme='dark']) .saveEditButton {
+  background: var(--portal-primary) !important;
+  color: var(--portal-bg) !important;
 }

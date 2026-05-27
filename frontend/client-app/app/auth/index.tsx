@@ -25,6 +25,12 @@ export default function AuthLandingScreen() {
             className="h-14 items-center justify-center rounded-full bg-[#2D8DE8]">
             <Text className="text-xl font-semibold text-white">Fazer login</Text>
           </Pressable>
+
+          <Pressable
+            onPress={() => router.push('/auth/register')}
+            className="mt-3 h-14 items-center justify-center rounded-full border border-white/70 bg-white/10">
+            <Text className="text-lg font-semibold text-white">Criar conta</Text>
+          </Pressable>
         </View>
       </View>
     </AuthBackground>

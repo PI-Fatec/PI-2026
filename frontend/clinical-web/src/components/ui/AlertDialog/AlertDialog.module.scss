@@ -11,19 +11,19 @@
 .dialog {
   width: min(100%, 460px);
   border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #d9e2ec;
+  background: var(--portal-surface, #ffffff);
+  border: 1px solid var(--portal-border, #d9e2ec);
   box-shadow: 0 24px 50px rgba(15, 23, 42, 0.2);
   padding: 18px;
 
   h2 {
-    color: #0f447a;
+    color: var(--portal-text, #1e293b);
     font-size: 1.15rem;
   }
 
   p {
     margin-top: 8px;
-    color: #475569;
+    color: var(--portal-muted-strong, #475569);
     line-height: 1.45;
   }
 
@@ -45,9 +45,9 @@
 }
 
 .cancelButton {
-  border: 1px solid #d4deea;
-  background: #f8fafc;
-  color: #0f447a;
+  border: 1px solid var(--portal-border, #d4deea);
+  background: var(--portal-surface-muted, #f8fafc);
+  color: var(--portal-primary, #475569);
 }
 
 .confirmButton {

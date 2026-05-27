@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Edit3, Eye, Trash2 } from 'lucide-react';
 import { Header } from '@/components/Layout/Header/Header';
 import { Sidebar } from '@/components/Layout/Sidebar/Sidebar';
@@ -10,8 +10,10 @@ import { DatePicker } from '@/components/ui/DatePicker/Datepicker';
 import { Select } from '@/components/ui/Select/Select';
 import { SideSheet } from '@/components/ui/SideSheet/SideSheet';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
+import { Toast } from '@/components/ui/Toast/Toast';
 import { useAuth } from '@/hooks/useAuth';
 import { usePatients } from '@/hooks/usePatients';
+import { useSidebarState } from '@/hooks/useSidebarState';
 import { HealthOverallStatus, Patient } from '@/types/patient';
 import { maskPhone } from '@/utils/masks';
 import styles from './gerenciamento.module.scss';
@@ -23,6 +25,12 @@ const riskClass: Record<Patient['risco'], string> = {
 };
 
 const skeletonRows = Array.from({ length: 6 }, (_, index) => `skeleton-row-${index}`);
+
+type PatientToast = {
+  title: string;
+  message: string;
+  variant: 'success' | 'error' | 'warning' | 'info';
+};
 
 const calculateImc = (alturaCm: number, pesoKg: number) => {
   if (!alturaCm || !pesoKg) {
@@ -77,6 +85,7 @@ const getPatientAge = (value: string | null) => {
 
 export default function GerenciamentoPacientesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { session, logout } = useAuth();
   const {
     patients,
@@ -91,14 +100,20 @@ export default function GerenciamentoPacientesPage() {
     removePatient,
   } = usePatients();
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isSidebarOpen, closeSidebar, toggleSidebar } = useSidebarState({ defaultOpen: false });
   const [sheetMode, setSheetMode] = useState<'details' | 'edit' | null>(null);
   const [sheetPatient, setSheetPatient] = useState<Patient | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Patient | null>(null);
   const [hasTriedEditSubmit, setHasTriedEditSubmit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [toast, setToast] = useState<PatientToast | null>(null);
 
   const role = session?.role ?? 'DOCTOR';
+  const headerSearch = searchParams.get('busca') ?? '';
+
+  useEffect(() => {
+    setFilters({ busca: headerSearch });
+  }, [headerSearch, setFilters]);
 
   const handleLogout = () => {
     logout();
@@ -132,17 +147,32 @@ export default function GerenciamentoPacientesPage() {
       return;
     }
 
-    await removePatient(pendingDelete.id);
+    try {
+      await removePatient(pendingDelete.id);
 
-    if (sheetPatient?.id === pendingDelete.id) {
-      closeSheet();
+      if (sheetPatient?.id === pendingDelete.id) {
+        closeSheet();
+      }
+
+      setToast({
+        variant: 'success',
+        title: 'Paciente excluido',
+        message: `${pendingDelete.nomeCompleto} foi removido da lista.`,
+      });
+      setPendingDelete(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Nao foi possivel excluir paciente.';
+      setToast({ variant: 'error', title: 'Falha ao excluir', message });
     }
-
-    setPendingDelete(null);
   };
 
   const handleRequestDelete = (patient: Patient) => {
     setPendingDelete(patient);
+  };
+
+  const handleResetFilters = () => {
+    resetFilters();
+    router.replace('/pacientes/gerenciamento');
   };
 
   const handleSaveEdit = async () => {
@@ -153,33 +183,46 @@ export default function GerenciamentoPacientesPage() {
     setHasTriedEditSubmit(true);
 
     if (!sheetPatient.nomeCompleto.trim() || !sheetPatient.email.trim()) {
-      setEditError('Preencha nome e e-mail para salvar a edicao.');
+      const message = 'Preencha nome e e-mail para salvar a edicao.';
+      setEditError(message);
+      setToast({ variant: 'warning', title: 'Revise os campos', message });
       return;
     }
 
     setEditError(null);
 
-    await updatePatient(sheetPatient.id, {
-      nomeCompleto: sheetPatient.nomeCompleto,
-      telefone: sheetPatient.telefone,
-      email: sheetPatient.email,
-      dataNascimento: sheetPatient.dataNascimento,
-      status: sheetPatient.status,
-      consumoAlcoolDoses: sheetPatient.consumoAlcoolDoses,
-      estadoGeralSaude: sheetPatient.estadoGeralSaude,
-      fumante: sheetPatient.fumante,
-      atividadeFisica: sheetPatient.atividadeFisica,
-      historicoAvc: sheetPatient.historicoAvc,
-      diabetes: sheetPatient.diabetes,
-      glicemiaMgDl: sheetPatient.glicemiaMgDl,
-      pressaoSistolica: sheetPatient.pressaoSistolica,
-      pressaoDiastolica: sheetPatient.pressaoDiastolica,
-      alturaCm: sheetPatient.alturaCm,
-      pesoKg: sheetPatient.pesoKg,
-      imc: sheetPatient.imc,
-    });
+    try {
+      await updatePatient(sheetPatient.id, {
+        nomeCompleto: sheetPatient.nomeCompleto,
+        telefone: sheetPatient.telefone,
+        email: sheetPatient.email,
+        dataNascimento: sheetPatient.dataNascimento,
+        status: sheetPatient.status,
+        consumoAlcoolDoses: sheetPatient.consumoAlcoolDoses,
+        estadoGeralSaude: sheetPatient.estadoGeralSaude,
+        fumante: sheetPatient.fumante,
+        atividadeFisica: sheetPatient.atividadeFisica,
+        historicoAvc: sheetPatient.historicoAvc,
+        diabetes: sheetPatient.diabetes,
+        glicemiaMgDl: sheetPatient.glicemiaMgDl,
+        pressaoSistolica: sheetPatient.pressaoSistolica,
+        pressaoDiastolica: sheetPatient.pressaoDiastolica,
+        alturaCm: sheetPatient.alturaCm,
+        pesoKg: sheetPatient.pesoKg,
+        imc: sheetPatient.imc,
+      });
 
-    closeSheet();
+      setToast({
+        variant: 'success',
+        title: 'Paciente atualizado',
+        message: `${sheetPatient.nomeCompleto} teve os dados salvos.`,
+      });
+      closeSheet();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Nao foi possivel atualizar paciente.';
+      setEditError(message);
+      setToast({ variant: 'error', title: 'Falha ao salvar', message });
+    }
   };
 
   const updateEditField = <K extends keyof Patient>(field: K, value: Patient[K]) => {
@@ -208,13 +251,19 @@ export default function GerenciamentoPacientesPage() {
         userName={session?.name ?? 'Usuario'}
         onLogout={handleLogout}
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={closeSidebar}
       />
 
-      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={() => setIsSidebarOpen(false)} />}
+      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={closeSidebar} />}
 
       <main className={styles.main}>
-        <Header userName={session?.name ?? 'Ricardo Silva'} role={role} onMenuClick={() => setIsSidebarOpen(true)} onLogout={handleLogout} />
+        <Header
+          userName={session?.name ?? 'Ricardo Silva'}
+          role={role}
+          isSidebarOpen={isSidebarOpen}
+          onMenuClick={toggleSidebar}
+          onLogout={handleLogout}
+        />
 
         <section className={styles.pageHeader}>
           <div>
@@ -284,7 +333,7 @@ export default function GerenciamentoPacientesPage() {
             onChangeValue={(nextValue) => setFilters({ dataFim: nextValue })}
           />
 
-          <button type="button" className={styles.clearButton} onClick={resetFilters}>
+          <button type="button" className={styles.clearButton} onClick={handleResetFilters}>
             Limpar filtros
           </button>
         </section>
@@ -367,7 +416,6 @@ export default function GerenciamentoPacientesPage() {
                           <button
                             type="button"
                             onClick={() => handleRequestDelete(patient)}
-                            onTouchEnd={() => handleRequestDelete(patient)}
                             aria-label="Excluir"
                           >
                             <Trash2 size={16} />
@@ -555,6 +603,15 @@ export default function GerenciamentoPacientesPage() {
         isLoading={isSaving}
         onClose={() => setPendingDelete(null)}
         onConfirm={handleDelete}
+      />
+
+      <Toast
+        isOpen={Boolean(toast)}
+        variant={toast?.variant ?? 'info'}
+        position="top-right"
+        title={toast?.title}
+        message={toast?.message ?? ''}
+        onClose={() => setToast(null)}
       />
     </div>
   );

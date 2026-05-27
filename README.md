@@ -27,7 +27,7 @@ https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/da
 
 ## Stack do projeto
 
-- Backend: Node.js + Express + Prisma + PostgreSQL + RabbitMQ
+- Backend: Node.js + Express + Prisma + PostgreSQL
 - Frontend Web: Next.js
 - Frontend Mobile: React Native / Expo
 
@@ -36,7 +36,6 @@ https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/da
 - Node.js 20+
 - npm 10+
 - PostgreSQL
-- RabbitMQ (opcional para fluxo de IA legado)
 
 ## Requisitos Funcionais
 
@@ -132,12 +131,13 @@ Servidor padrao: http://localhost:3000
 cd backend
 ```
 
-2. Garanta que o `.env` tenha os hosts dos servicos Docker:
+2. Garanta que o `.env` tenha o host do PostgreSQL do Docker:
 
 ```env
 DATABASE_URL="postgresql://healthtrack:healthtrack@postgres:5432/healthtrack?schema=public"
-RABBITMQ_URL="amqp://rabbitmq:5672"
 ```
+
+Observacao: o `docker-compose.yml` ainda possui RabbitMQ para o fluxo legado de IA, mas o fluxo atual do backend nao depende dele.
 
 3. Suba os containers:
 
@@ -156,7 +156,9 @@ docker compose down
 ## Rotas principais (backend)
 
 - `POST /api/auth/login`
-- `POST /api/auth/register/self`
+- `POST /api/auth/register/self` (auto-cadastro de medico no portal e cliente no app)
+- `GET /api/account/me` (ADMIN/DOCTOR)
+- `PUT /api/account/me` (ADMIN/DOCTOR)
 - `POST /api/invites/doctors` (ADMIN)
 - `POST /api/invites/patients` (DOCTOR)
 - `GET /api/invites/validate?token=...`
@@ -172,6 +174,19 @@ docker compose down
 - `POST /api/records`
 - `PUT /api/records/:id`
 - `DELETE /api/records/:id`
+
+## Cuidados de dados
+
+- O tipo de registro `alimentacao` foi removido do contrato atual. Antes de aplicar `npx prisma db push` em uma base com dados antigos, converta registros `alimentacao` para `prontuario` ou remova registros de teste.
+- O projeto ainda usa `prisma db push` no Docker e nao possui pasta de migrations formais. Para producao ou avaliacao com base persistente, gere migrations versionadas antes de alterar enum/schema.
+
+## Pendencias backend
+
+- Integrar a IA real para atualizar `risco` e `probabilidadeRisco`; o backend nao calcula mais risco por heuristica local.
+- Definir endpoint, worker ou rotina para a IA gravar o resultado de risco no `PatientProfile`.
+- Adicionar testes automatizados para autenticacao, auto-cadastro mobile, conta clinica, pacientes e registros.
+- Criar migrations formais do Prisma em vez de depender apenas de `db push`.
+- Limpar o fluxo legado `healthController`/`queueService`/RabbitMQ quando a integracao definitiva com IA estiver fechada.
 
 ## Scripts disponiveis no backend
 

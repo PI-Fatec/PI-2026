@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal/Modal';
 import Skeleton from '@/components/ui/Skeleton/Skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useDoctors } from '@/hooks/useDoctors';
+import { useSidebarState } from '@/hooks/useSidebarState';
 import { Doctor, NewDoctorInput } from '@/types/doctor';
 import { maskPhone, normalizeCrm } from '@/utils/masks';
 import styles from './medicos.module.scss';
@@ -48,7 +49,7 @@ export default function AdminMedicosPage() {
   const [pendingDelete, setPendingDelete] = useState<Doctor | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isSidebarOpen, closeSidebar, toggleSidebar } = useSidebarState({ defaultOpen: false });
   const [isDoctorModalOpen, setIsDoctorModalOpen] = useState(false);
 
   const role = session?.role ?? 'DOCTOR';
@@ -168,13 +169,19 @@ export default function AdminMedicosPage() {
         userName={session?.name ?? 'Administrador'}
         onLogout={handleLogout}
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={closeSidebar}
       />
 
-      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={() => setIsSidebarOpen(false)} />}
+      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={closeSidebar} />}
 
       <main className={styles.main}>
-        <Header userName={session?.name ?? 'Administrador'} role={role} onMenuClick={() => setIsSidebarOpen(true)} onLogout={handleLogout} />
+        <Header
+          userName={session?.name ?? 'Administrador'}
+          role={role}
+          isSidebarOpen={isSidebarOpen}
+          onMenuClick={toggleSidebar}
+          onLogout={handleLogout}
+        />
 
         <section className={styles.pageHeader}>
           <h1>Controle Administrativo de Medicos</h1>

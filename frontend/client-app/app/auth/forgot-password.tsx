@@ -47,11 +47,14 @@ export default function ForgotPasswordScreen() {
 
           <View className="mt-6">
             <AuthTextInput
+              label="E-mail"
               value={email}
               onChangeText={setEmail}
-              placeholder="Email"
+              placeholder="voce@email.com"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
+              textContentType="emailAddress"
             />
           </View>
 

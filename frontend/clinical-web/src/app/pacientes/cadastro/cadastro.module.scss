@@ -5,10 +5,13 @@
 }
 
 .backdrop {
+  display: none;
   position: fixed;
   inset: 0;
   border: none;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(12, 18, 28, 0.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   z-index: 50;
 }
 
@@ -21,19 +24,8 @@
 .pageHeader {
   margin-top: 16px;
 
-  .logoWrap {
-    width: 170px;
-    margin-bottom: 10px;
-
-    img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-  }
-
   h1 {
-    color: #073b70;
+    color: var(--portal-primary, #475569);
     font-size: 2rem;
     line-height: 1.1;
   }
@@ -68,7 +60,7 @@
   font-size: 0.73rem;
   font-weight: 700;
   letter-spacing: 0.6px;
-  color: #0f447a;
+  color: var(--portal-primary, #475569);
   white-space: nowrap;
 }
 
@@ -84,7 +76,7 @@
     gap: 6px;
     font-size: 0.86rem;
     font-weight: 600;
-    color: #0f3f6b;
+    color: var(--portal-primary, #475569);
   }
 
   input,
@@ -99,11 +91,15 @@
 
     &:focus {
       outline: none;
-      border-color: #0f447a;
-      box-shadow: 0 0 0 4px rgba(15, 68, 122, 0.12);
+      border-color: var(--portal-focus-border, rgba(71, 85, 105, 0.28));
+      box-shadow: 0 0 0 4px var(--portal-focus-ring, rgba(71, 85, 105, 0.14));
       background: #fff;
     }
   }
+}
+
+.dateField {
+  min-width: 0;
 }
 
 .metricCard {
@@ -113,7 +109,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: linear-gradient(130deg, #edf3f9, #f8fcff);
+  background: #f8fafc;
 
   span {
     color: #64748b;
@@ -122,7 +118,7 @@
 
   strong {
     margin-top: 4px;
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
     font-size: 1.65rem;
   }
 }
@@ -184,7 +180,7 @@
     gap: 6px;
     font-size: 0.86rem;
     font-weight: 600;
-    color: #0f3f6b;
+    color: var(--portal-primary, #475569);
   }
 
   input,
@@ -199,8 +195,8 @@
 
     &:focus {
       outline: none;
-      border-color: #0f447a;
-      box-shadow: 0 0 0 4px rgba(15, 68, 122, 0.12);
+      border-color: var(--portal-focus-border, rgba(71, 85, 105, 0.28));
+      box-shadow: 0 0 0 4px var(--portal-focus-ring, rgba(71, 85, 105, 0.14));
       background: #fff;
     }
   }
@@ -215,15 +211,6 @@
   margin-top: 12px;
   color: #b42318;
   font-size: 0.86rem;
-}
-
-.feedbackSuccess {
-  margin-top: 12px;
-  color: #166534;
-  font-size: 0.86rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .invalidInput {
@@ -243,7 +230,7 @@
   button {
     border: none;
     background: transparent;
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
     font-weight: 700;
     cursor: pointer;
     padding: 10px 12px;
@@ -269,7 +256,7 @@
 
 .saveButton {
   border: none !important;
-  background: linear-gradient(90deg, #2c5f00, #345f00) !important;
+  background: #345f00 !important;
   color: #fff !important;
   min-width: 136px;
   display: inline-flex;
@@ -290,7 +277,7 @@
   gap: 12px;
 
   strong {
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
   }
 
   p {
@@ -304,7 +291,7 @@
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: linear-gradient(160deg, #0f447a, #72a0d3);
+  background: #475569;
   color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
@@ -341,4 +328,69 @@
   .actionRight {
     justify-content: flex-end;
   }
+}
+
+@media (max-width: 960px) {
+  .backdrop {
+    display: block;
+  }
+}
+
+:global([data-portal-theme='dark']) .shell {
+  background: var(--portal-bg);
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .pageHeader h1,
+:global([data-portal-theme='dark']) .cdcCard h3 {
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .pageHeader p,
+:global([data-portal-theme='dark']) .cdcCard p,
+:global([data-portal-theme='dark']) .predictionInputsRow small {
+  color: var(--portal-muted);
+}
+
+:global([data-portal-theme='dark']) .formCard,
+:global([data-portal-theme='dark']) .metricCard,
+:global([data-portal-theme='dark']) .cdcCard {
+  background: var(--portal-surface);
+  border-color: var(--portal-border);
+  box-shadow: none;
+}
+
+:global([data-portal-theme='dark']) .stepGrid label,
+:global([data-portal-theme='dark']) .predictionInputsRow label,
+:global([data-portal-theme='dark']) .aiBadge,
+:global([data-portal-theme='dark']) .metricCard strong {
+  color: var(--portal-primary);
+}
+
+:global([data-portal-theme='dark']) .stepGrid input,
+:global([data-portal-theme='dark']) .stepGrid select,
+:global([data-portal-theme='dark']) .predictionInputsRow input,
+:global([data-portal-theme='dark']) .predictionInputsRow select {
+  background: var(--portal-input);
+  border-color: var(--portal-border);
+  color: var(--portal-text);
+}
+
+:global([data-portal-theme='dark']) .actionsRow {
+  border-color: var(--portal-border);
+}
+
+:global([data-portal-theme='dark']) .actionsRow button {
+  color: var(--portal-primary);
+}
+
+:global([data-portal-theme='dark']) .actionRight button {
+  background: var(--portal-surface-muted);
+  border-color: var(--portal-border);
+}
+
+:global([data-portal-theme='dark']) .saveButton {
+  background: var(--portal-primary) !important;
+  color: var(--portal-bg) !important;
+  box-shadow: none;
 }

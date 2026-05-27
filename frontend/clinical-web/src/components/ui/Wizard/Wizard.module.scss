@@ -17,16 +17,16 @@
   color: $text-muted;
 
   &.active {
-    color: #0f447a;
+    color: var(--portal-primary, #475569);
 
     .badge {
-      background: #0f447a;
+      background: var(--portal-primary, #475569);
       color: #fff;
-      box-shadow: 0 6px 12px rgba(15, 68, 122, 0.2);
+      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.14);
     }
 
     .line {
-      border-top-color: rgba(15, 68, 122, 0.45);
+      border-top-color: var(--portal-border-strong, #cbd5e1);
     }
   }
 

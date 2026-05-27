@@ -4,7 +4,6 @@ const { prisma } = require('../lib/prisma');
 const { sendInviteEmail } = require('../services/emailService');
 const { createRawInviteToken, hashInviteToken, getInviteExpiry } = require('../services/inviteService');
 const { signAuthToken } = require('../services/tokenService');
-const { computeRiskMetrics } = require('../services/riskService');
 const { normalizeEmail, toBoolean, toInt, toNumber } = require('../utils/parsers');
 
 const webBaseUrl = process.env.WEB_BASE_URL || 'http://localhost:3001';
@@ -86,7 +85,7 @@ function buildPatientPayload(body) {
     status: body.status || 'ATIVO',
   };
 
-  return { ...base, ...computeRiskMetrics(base) };
+  return base;
 }
 
 async function createInvite({ role, email, invitedById, invitedUserId, metadata }) {

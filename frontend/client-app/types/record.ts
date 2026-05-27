@@ -1,7 +1,6 @@
 export type HealthRecordType =
   | 'glicemia'
   | 'pressao_arterial'
-  | 'alimentacao'
   | 'exame'
   | 'prontuario'
   | 'predicao_risco';

@@ -28,32 +28,32 @@
 }
 
 .primary {
-  background-color: $blue-button;
+  background-color: var(--portal-primary, #475569);
   color: $white;
 
   &:hover:not(:disabled) {
-    background-color: lighten($blue-button, 5%);
-    box-shadow: 0 4px 12px rgba($blue-button, 0.2);
+    background-color: var(--portal-muted-strong, #334155);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
   }
 }
 
 .secondary {
-  background-color: $input-bg;
-  color: $text-main;
+  background-color: var(--portal-surface-muted, #f8fafc);
+  color: var(--portal-text, #333333);
 
   &:hover:not(:disabled) {
-    background-color: darken($input-bg, 5%);
+    background-color: var(--portal-hover, #f1f5f9);
   }
 }
 
 .outline {
   background-color: transparent;
-  border: 1px solid $border-light;
-  color: $text-muted;
+  border: 1px solid var(--portal-border, #d9e2ec);
+  color: var(--portal-muted-strong, #475569);
 
   &:hover:not(:disabled) {
-    border-color: $blue-accent;
-    color: $blue-accent;
+    border-color: var(--portal-border-strong, #cbd5e1);
+    color: var(--portal-primary, #475569);
   }
 }
 

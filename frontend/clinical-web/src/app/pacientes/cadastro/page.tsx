@@ -1,16 +1,17 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Rocket, CircleCheck } from 'lucide-react';
+import { Sparkles, Rocket } from 'lucide-react';
 import { Header } from '@/components/Layout/Header/Header';
 import { Sidebar } from '@/components/Layout/Sidebar/Sidebar';
+import { DatePicker } from '@/components/ui/DatePicker/Datepicker';
 import { Toggle } from '@/components/ui/Toggle/Toggle';
+import { Toast } from '@/components/ui/Toast/Toast';
 import { Wizard } from '@/components/ui/Wizard/Wizard';
-import logo from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { usePatients } from '@/hooks/usePatients';
+import { useSidebarState } from '@/hooks/useSidebarState';
 import { HealthOverallStatus, NewPatientInput } from '@/types/patient';
 import { maskCpf, maskPhone } from '@/utils/masks';
 import styles from './cadastro.module.scss';
@@ -20,6 +21,12 @@ const wizardSteps = [
   { id: 'biometria', label: 'Biometria' },
   { id: 'preditores', label: 'Preditores Clinicos' },
 ];
+
+type PatientToast = {
+  title: string;
+  message: string;
+  variant: 'success' | 'error' | 'warning' | 'info';
+};
 
 const initialForm: NewPatientInput = {
   nomeCompleto: '',
@@ -59,9 +66,9 @@ export default function CadastroPacientePage() {
 
   const [form, setForm] = useState<NewPatientInput>(initialForm);
   const [stepIndex, setStepIndex] = useState(0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isSidebarOpen, closeSidebar, toggleSidebar } = useSidebarState({ defaultOpen: false });
   const [stepError, setStepError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<PatientToast | null>(null);
   const [hasTriedCurrentStep, setHasTriedCurrentStep] = useState(false);
 
   const role = session?.role ?? 'DOCTOR';
@@ -138,6 +145,7 @@ export default function CadastroPacientePage() {
         if (validationError) {
           setHasTriedCurrentStep(true);
           setStepError(validationError);
+          setToast({ variant: 'warning', title: 'Revise os campos', message: validationError });
           return;
         }
       }
@@ -157,6 +165,7 @@ export default function CadastroPacientePage() {
     if (validationError) {
       setHasTriedCurrentStep(true);
       setStepError(validationError);
+      setToast({ variant: 'warning', title: 'Revise os campos', message: validationError });
       return;
     }
 
@@ -179,6 +188,7 @@ export default function CadastroPacientePage() {
     if (validationError) {
       setHasTriedCurrentStep(true);
       setStepError(validationError);
+      setToast({ variant: 'warning', title: 'Revise os campos', message: validationError });
       return;
     }
 
@@ -188,12 +198,17 @@ export default function CadastroPacientePage() {
         imc: imcValue,
       });
 
-      setSuccessMessage('Convite enviado ao cliente com sucesso. Redirecionando para gerenciamento...');
+      setToast({
+        variant: 'success',
+        title: 'Paciente cadastrado',
+        message: 'Convite enviado ao cliente com sucesso. Redirecionando para gerenciamento...',
+      });
       setHasTriedCurrentStep(false);
       setStepError(null);
       setTimeout(() => router.push('/pacientes/gerenciamento'), 900);
-    } catch {
-      setSuccessMessage(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Nao foi possivel cadastrar paciente.';
+      setToast({ variant: 'error', title: 'Falha no cadastro', message });
     }
   };
 
@@ -204,18 +219,21 @@ export default function CadastroPacientePage() {
         userName={session?.name ?? 'Usuario'}
         onLogout={handleLogout}
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={closeSidebar}
       />
 
-      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={() => setIsSidebarOpen(false)} />}
+      {isSidebarOpen && <button type="button" className={styles.backdrop} aria-label="Fechar menu" onClick={closeSidebar} />}
 
       <main className={styles.main}>
-        <Header userName={session?.name ?? 'Ricardo Silva'} role={role} onMenuClick={() => setIsSidebarOpen(true)} onLogout={handleLogout} />
+        <Header
+          userName={session?.name ?? 'Ricardo Silva'}
+          role={role}
+          isSidebarOpen={isSidebarOpen}
+          onMenuClick={toggleSidebar}
+          onLogout={handleLogout}
+        />
 
         <section className={styles.pageHeader}>
-          <div className={styles.logoWrap}>
-            <Image src={logo} alt="HealthTrack AI" priority />
-          </div>
           <h1>Novo Paciente</h1>
           <p>Siga o assistente para gerar a analise preditiva por IA.</p>
         </section>
@@ -258,16 +276,14 @@ export default function CadastroPacientePage() {
                   />
                 </label>
 
-                <label>
-                  Data de nascimento
-                  <input
-                    className={isInvalidField('dataNascimento') ? styles.invalidInput : ''}
-                    type="date"
+                <div className={styles.dateField}>
+                  <DatePicker
+                    label="Data de nascimento"
                     value={form.dataNascimento}
-                    onChange={(event) => setForm((current) => ({ ...current, dataNascimento: event.target.value }))}
-                    required
+                    onChangeValue={(nextValue) => setForm((current) => ({ ...current, dataNascimento: nextValue }))}
+                    error={isInvalidField('dataNascimento') ? 'Informe a data de nascimento.' : undefined}
                   />
-                </label>
+                </div>
 
                 <label>
                   Sexo
@@ -444,12 +460,6 @@ export default function CadastroPacientePage() {
 
             {stepError && <p className={styles.feedbackError}>{stepError}</p>}
             {error && <p className={styles.feedbackError}>{error}</p>}
-            {successMessage && (
-              <p className={styles.feedbackSuccess}>
-                <CircleCheck size={16} />
-                {successMessage}
-              </p>
-            )}
 
             <footer className={styles.actionsRow}>
               <button type="button" onClick={goBack} disabled={stepIndex === 0 || isSaving}>
@@ -474,8 +484,16 @@ export default function CadastroPacientePage() {
           </form>
         </section>
 
-     
       </main>
+
+      <Toast
+        isOpen={Boolean(toast)}
+        variant={toast?.variant ?? 'info'}
+        position="top-right"
+        title={toast?.title}
+        message={toast?.message ?? ''}
+        onClose={() => setToast(null)}
+      />
     </div>
   );
 }

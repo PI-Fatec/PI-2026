@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, type PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
-import { authApi, AppRole } from '@/lib/auth-api';
+import { authApi, AppRole, type PatientRegisterPayload } from '@/lib/auth-api';
 
 const TOKEN_KEY = '@healthtrack:token';
 const ONBOARDING_KEY = '@healthtrack:onboarding-complete';
@@ -22,6 +22,7 @@ type SessionContextValue = {
   userName: string;
   completeOnboarding: () => Promise<void>;
   signInWithCredentials: (identifier: string, password: string) => Promise<void>;
+  registerPatient: (payload: PatientRegisterPayload) => Promise<void>;
   acceptInvite: (payload: {
     token: string;
     role: 'DOCTOR' | 'PATIENT';
@@ -91,6 +92,16 @@ export function SessionProvider({ children }: PropsWithChildren) {
     await persistAuth(payload.token, payload.user);
   };
 
+  const registerPatient = async (payload: PatientRegisterPayload) => {
+    const response = await authApi.registerPatient(payload);
+
+    if (response.user.role !== 'PATIENT') {
+      throw new Error('Somente pacientes podem acessar este aplicativo.');
+    }
+
+    await persistAuth(response.token, response.user);
+  };
+
   const validateInvite = async (inviteToken: string) => authApi.validateInvite(inviteToken);
 
   const acceptInvite = async (payload: {
@@ -131,6 +142,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       userName: user?.name ?? '',
       completeOnboarding,
       signInWithCredentials,
+      registerPatient,
       acceptInvite,
       validateInvite,
       signOut,

@@ -12,11 +12,31 @@ export type AuthPayload = {
   };
 };
 
+export type PatientRegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  cpf: string;
+  dataNascimento: string;
+  sexo: 'Masculino' | 'Feminino' | 'Outro';
+  telefone?: string;
+};
+
 export const authApi = {
   login(identifier: string, password: string) {
     return apiRequest<AuthPayload>('/api/auth/login', {
       method: 'POST',
       body: { identifier, password, portal: 'MOBILE_APP' },
+    });
+  },
+
+  registerPatient(payload: PatientRegisterPayload) {
+    return apiRequest<AuthPayload>('/api/auth/register/self', {
+      method: 'POST',
+      body: {
+        role: 'PATIENT',
+        ...payload,
+      },
     });
   },
 

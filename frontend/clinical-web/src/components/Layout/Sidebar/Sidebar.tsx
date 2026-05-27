@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
+import type { ElementType } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ActivitySquare, FileSearch, LogOut, X, UserCog } from 'lucide-react';
+import { LayoutDashboard, Users, FileSearch, LogOut, X, UserCog, Settings } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { UserRole } from '@/types/auth';
 import styles from './sidebar.module.scss';
@@ -16,19 +17,19 @@ interface SidebarProps {
 	onClose?: () => void;
 }
 
-const roleItems: Record<UserRole, Array<{ label: string; href: string; icon: React.ElementType }>> = {
+const roleItems: Record<UserRole, Array<{ label: string; href: string; icon: ElementType }>> = {
 	ADMIN: [
 		{ label: 'Dashboard', href: '/', icon: LayoutDashboard },
 		{ label: 'Cadastrar paciente', href: '/pacientes/cadastro', icon: Users },
 		{ label: 'Gerenciar pacientes', href: '/pacientes/gerenciamento', icon: FileSearch },
 		{ label: 'Controle de medicos', href: '/admin/medicos', icon: UserCog },
-		{ label: 'Relatorios IA', href: '/dashboard', icon: ActivitySquare },
+		{ label: 'Configurações', href: '/configuracoes/conta', icon: Settings },
 	],
 	DOCTOR: [
 		{ label: 'Dashboard', href: '/', icon: LayoutDashboard },
 		{ label: 'Cadastrar paciente', href: '/pacientes/cadastro', icon: Users },
 		{ label: 'Gerenciar pacientes', href: '/pacientes/gerenciamento', icon: FileSearch },
-		{ label: 'Alertas clinicos', href: '/dashboard', icon: ActivitySquare },
+		{ label: 'Configurações', href: '/configuracoes/conta', icon: Settings },
 	],
 	PATIENT: [
 		{ label: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -47,7 +48,7 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 	};
 
 	return (
-		<aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+		<aside className={`${styles.sidebar} ${isOpen ? styles.open : styles.collapsed}`} aria-label="Menu lateral">
 			<div className={styles.mobileHeader}>
 				<strong>Menu</strong>
 				<button type="button" className={styles.closeButton} aria-label="Fechar menu" onClick={onClose}>
@@ -56,10 +57,8 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 			</div>
 
 			<div className={styles.brandBlock}>
-				
-				<div>
-					<h1>HealthTrack AI</h1>
-					<p>Clinical Intelligence</p>
+				<div className={styles.brandLogoFrame}>
+					<Image src={logo} alt="HealthTrack AI" className={styles.brandLogo} priority />
 				</div>
 			</div>
 
@@ -67,7 +66,12 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 				<ul>
 					{roleItems[role].map((item) => (
 						<li key={item.href}>
-							<Link href={item.href} className={`${styles.menuLink} ${isActive(item.href) ? styles.active : ''}`}>
+							<Link
+								href={item.href}
+								className={`${styles.menuLink} ${isActive(item.href) ? styles.active : ''}`}
+								aria-label={item.label}
+								title={!isOpen ? item.label : undefined}
+							>
 								<item.icon size={16} />
 								<span>{item.label}</span>
 							</Link>
@@ -76,9 +80,9 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 				</ul>
 			</nav>
 
-			<button type="button" className={styles.logoutButton} onClick={onLogout}>
+			<button type="button" className={styles.logoutButton} onClick={onLogout} aria-label="Sair" title={!isOpen ? 'Sair' : undefined}>
 				<LogOut size={16} />
-				Sair
+				<span>Sair</span>
 			</button>
 		</aside>
 	);

@@ -5,6 +5,7 @@ const inviteRoutes = require('./routes/inviteRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const recordRoutes = require('./routes/recordRoutes');
+const accountRoutes = require('./routes/accountRoutes');
 
 const app = express();
 
@@ -20,5 +21,6 @@ app.use('/api/invites', inviteRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/records', recordRoutes);
+app.use('/api/account', accountRoutes);
 
 module.exports = app;

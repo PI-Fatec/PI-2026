@@ -51,7 +51,6 @@ enum RiskLevel {
 enum HealthRecordType {
   glicemia
   pressao_arterial
-  alimentacao
   exame
   prontuario
   predicao_risco

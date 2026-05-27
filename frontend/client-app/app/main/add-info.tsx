@@ -11,6 +11,12 @@ import {
   type HealthRecordType,
 } from '@/providers/health-records-provider';
 
+type InfoErrors = {
+  value?: string;
+  date?: string;
+  time?: string;
+};
+
 export default function AddInfoScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; type?: string }>();
@@ -26,6 +32,8 @@ export default function AddInfoScreen() {
   const [date, setDate] = useState(formatDateInput(editRecord?.recordedAt));
   const [time, setTime] = useState(formatTimeInput(editRecord?.recordedAt));
   const [notes, setNotes] = useState(editRecord?.notes ?? '');
+  const [errors, setErrors] = useState<InfoErrors>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!editRecord) {
@@ -41,15 +49,22 @@ export default function AddInfoScreen() {
 
   const selectedTypeMeta = getRecordTypeMeta(selectedType);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const parsedValue = Number(value.replace(',', '.'));
+    const recordedAt = buildIsoDate(date, time);
+    const nextErrors: InfoErrors = {
+      value: Number.isFinite(parsedValue) && parsedValue > 0 ? undefined : 'Informe um valor numérico maior que zero.',
+      date: isValidDateInput(date) ? undefined : 'Use uma data no formato AAAA-MM-DD.',
+      time: isValidTimeInput(time) ? undefined : 'Use uma hora no formato HH:mm.',
+    };
 
-    if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
-      Alert.alert('Valor inválido', 'Informe um valor numérico válido.');
+    setErrors(nextErrors);
+
+    if (nextErrors.value || nextErrors.date || nextErrors.time || !recordedAt) {
+      Alert.alert('Revise o registro', 'Alguns campos precisam de ajuste antes de salvar.');
       return;
     }
 
-    const recordedAt = buildIsoDate(date, time);
     const payload = {
       type: selectedType,
       value: parsedValue,
@@ -58,13 +73,20 @@ export default function AddInfoScreen() {
       recordedAt,
     };
 
-    if (editId) {
-      updateRecord(editId, payload);
-    } else {
-      addRecord(payload);
-    }
+    try {
+      setIsSaving(true);
+      if (editId) {
+        await updateRecord(editId, payload);
+      } else {
+        await addRecord(payload);
+      }
 
-    router.replace('/main/dashboard');
+      router.replace('/main/dashboard');
+    } catch (error) {
+      Alert.alert('Falha ao salvar', error instanceof Error ? error.message : 'Não foi possível salvar o registro.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -99,60 +121,76 @@ export default function AddInfoScreen() {
         </View>
       </View>
 
-      <View className="mt-5 rounded-3xl border-l-4 border-l-[#0E7490] bg-white p-5">
+      <View className="mt-5 rounded-3xl border border-[#E2E8F0] bg-white p-5">
         <Text className="text-center text-xs font-semibold uppercase tracking-[2px] text-[#6B7280]">
           Valor medido
         </Text>
         <View className="mt-4 flex-row items-end justify-center gap-2">
           <TextInput
             value={value}
-            onChangeText={setValue}
-            keyboardType="numeric"
+            onChangeText={(nextValue) => {
+              setValue(nextValue);
+              setErrors((current) => ({ ...current, value: undefined }));
+            }}
+            keyboardType="decimal-pad"
             placeholder={selectedTypeMeta.placeholder}
-            placeholderTextColor="#BFDBFE"
-            className="w-40 border-b border-[#BFDBFE] text-center text-5xl font-extrabold text-[#BFDBFE]"
+            placeholderTextColor="#94A3B8"
+            editable={!isSaving}
+            className={`w-40 border-b text-center text-5xl font-extrabold ${
+              errors.value ? 'border-[#DC2626] text-[#DC2626]' : 'border-[#38BDF8] text-[#0F3D8C]'
+            }`}
           />
           <Text className="mb-2 text-2xl font-semibold text-[#6B7280]">{selectedTypeMeta.unit}</Text>
         </View>
-        <View className="mt-4 self-center rounded-full bg-[#DCFCE7] px-4 py-1">
-          <Text className="text-xs font-semibold uppercase text-[#3F6212]">Registro local</Text>
-        </View>
+        {errors.value ? <Text className="mt-3 text-center text-xs font-semibold text-[#DC2626]">{errors.value}</Text> : null}
       </View>
 
       <View className="mt-5 flex-row gap-3">
         <InfoInput
           label="Data"
           value={date}
-          onChangeText={setDate}
+          onChangeText={(nextValue) => {
+            setDate(nextValue);
+            setErrors((current) => ({ ...current, date: undefined }));
+          }}
           placeholder="YYYY-MM-DD"
           icon="calendar-outline"
+          error={errors.date}
         />
         <InfoInput
           label="Hora"
           value={time}
-          onChangeText={setTime}
+          onChangeText={(nextValue) => {
+            setTime(nextValue);
+            setErrors((current) => ({ ...current, time: undefined }));
+          }}
           placeholder="HH:mm"
           icon="time-outline"
+          error={errors.time}
         />
       </View>
 
-      <View className="mt-4 rounded-2xl border border-dashed border-[#60A5FA] bg-white p-4">
+      <View className="mt-4 rounded-2xl border border-[#E2E8F0] bg-white p-4">
         <Text className="text-xs font-semibold uppercase tracking-[2px] text-[#64748B]">Notas e observações</Text>
         <TextInput
           value={notes}
           onChangeText={setNotes}
           multiline
           numberOfLines={4}
-          placeholder="Ex: observações do registro, origem do exame, refeição etc."
+          editable={!isSaving}
+          placeholder="Ex: sintomas, origem do exame, orientação médica ou contexto da medição."
           placeholderTextColor="#94A3B8"
-          className="mt-3 rounded-xl border border-dashed border-[#93C5FD] px-3 py-3 text-base text-[#1E293B]"
+          className="mt-3 min-h-24 rounded-xl border border-[#CBD5E1] px-3 py-3 text-base text-[#1E293B]"
         />
       </View>
 
       <Pressable
         onPress={handleSave}
-        className="mt-7 h-14 items-center justify-center rounded-full bg-[#0F3D8C]">
-        <Text className="text-xl font-semibold text-white">{editRecord ? 'Salvar alterações' : 'Salvar registro'}</Text>
+        disabled={isSaving}
+        className={`mt-7 h-14 items-center justify-center rounded-full ${isSaving ? 'bg-[#93A4BD]' : 'bg-[#0F3D8C]'}`}>
+        <Text className="text-xl font-semibold text-white">
+          {isSaving ? 'Salvando...' : editRecord ? 'Salvar alterações' : 'Salvar registro'}
+        </Text>
       </Pressable>
     </ScrollView>
   );
@@ -164,18 +202,20 @@ function InfoInput({
   onChangeText,
   placeholder,
   icon,
+  error,
 }: {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
   placeholder: string;
   icon: keyof typeof Ionicons.glyphMap;
+  error?: string;
 }) {
   return (
-    <View className="flex-1 rounded-2xl bg-white p-3">
+    <View className={`flex-1 rounded-2xl border bg-white p-3 ${error ? 'border-[#DC2626]' : 'border-transparent'}`}>
       <Text className="text-xs font-semibold uppercase tracking-[2px] text-[#64748B]">{label}</Text>
       <View className="mt-2 flex-row items-center gap-2">
-        <Ionicons name={icon} size={18} color="#0EA5E9" />
+        <Ionicons name={icon} size={18} color={error ? '#DC2626' : '#0EA5E9'} />
         <TextInput
           value={value}
           onChangeText={onChangeText}
@@ -184,6 +224,7 @@ function InfoInput({
           className="flex-1 text-lg font-semibold text-[#0F3D8C]"
         />
       </View>
+      {error ? <Text className="mt-2 text-xs font-semibold text-[#DC2626]">{error}</Text> : null}
     </View>
   );
 }
@@ -201,13 +242,30 @@ function formatTimeInput(dateIso?: string) {
 }
 
 function buildIsoDate(date: string, time: string) {
+  if (!isValidDateInput(date) || !isValidTimeInput(time)) {
+    return null;
+  }
+
   const parsed = new Date(`${date}T${time}:00`);
 
   if (Number.isNaN(parsed.getTime())) {
-    return new Date().toISOString();
+    return null;
   }
 
   return parsed.toISOString();
+}
+
+function isValidDateInput(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const parsed = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(parsed.getTime());
+}
+
+function isValidTimeInput(value: string) {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 }
 
 function normalizeParam(value?: string | string[]) {

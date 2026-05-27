@@ -14,9 +14,17 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
+    const nextErrors = {
+      email: email.trim() ? undefined : 'Informe seu e-mail.',
+      password: password.trim() ? undefined : 'Informe sua senha.',
+    };
+
+    setErrors(nextErrors);
+
+    if (nextErrors.email || nextErrors.password) {
       Alert.alert('Campos obrigatórios', 'Preencha e-mail e senha para entrar.');
       return;
     }
@@ -48,19 +56,33 @@ export default function LoginScreen() {
 
           <View className="mt-12 gap-4">
             <AuthTextInput
+              label="E-mail"
               value={email}
-              onChangeText={setEmail}
-              placeholder="Email"
+              onChangeText={(nextValue) => {
+                setEmail(nextValue);
+                setErrors((current) => ({ ...current, email: undefined }));
+              }}
+              placeholder="voce@email.com"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
+              textContentType="emailAddress"
+              error={errors.email}
             />
 
             <AuthTextInput
+              label="Senha"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(nextValue) => {
+                setPassword(nextValue);
+                setErrors((current) => ({ ...current, password: undefined }));
+              }}
               placeholder="Senha"
               secureTextEntry
               autoCapitalize="none"
+              autoComplete="password"
+              textContentType="password"
+              error={errors.password}
             />
           </View>
 
@@ -78,6 +100,10 @@ export default function LoginScreen() {
 
           <Pressable onPress={() => router.replace('/auth')} className="mt-6">
             <Text className="text-center text-xs text-[#2D8DE8]">Voltar para início</Text>
+          </Pressable>
+
+          <Pressable onPress={() => router.push('/auth/register')} className="mt-3">
+            <Text className="text-center text-sm font-semibold text-[#0F3D8C]">Criar minha conta</Text>
           </Pressable>
         </AuthBottomSheet>
       </View>
