@@ -12,7 +12,7 @@
   background: rgba(12, 18, 28, 0.42);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  z-index: 50;
+  z-index: 40;
 }
 
 .main {
@@ -158,6 +158,15 @@
       cursor: not-allowed;
     }
   }
+}
+
+.successButton {
+  background: #166534 !important;
+  box-shadow: 0 8px 18px rgba(22, 101, 52, 0.2);
+}
+
+.successButton:hover {
+  background: #14532d !important;
 }
 
 @include mobile {

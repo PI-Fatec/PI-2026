@@ -7,13 +7,14 @@ type PortalTheme = 'light' | 'dark';
 const STORAGE_KEY = 'healthtrack:portal-theme';
 
 export function usePortalTheme() {
-  const [theme, setTheme] = useState<PortalTheme>(() => {
-    if (typeof window === 'undefined') {
-      return 'light';
-    }
+  const [theme, setTheme] = useState<PortalTheme>('light');
 
-    return window.localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light';
-  });
+  useEffect(() => {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === 'dark' || stored === 'light') {
+      setTheme(stored);
+    }
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.portalTheme = theme;

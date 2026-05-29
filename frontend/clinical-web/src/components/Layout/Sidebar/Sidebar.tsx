@@ -70,7 +70,7 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 								href={item.href}
 								className={`${styles.menuLink} ${isActive(item.href) ? styles.active : ''}`}
 								aria-label={item.label}
-								title={!isOpen ? item.label : undefined}
+								data-tooltip={!isOpen ? item.label : undefined}
 							>
 								<item.icon size={16} />
 								<span>{item.label}</span>
@@ -80,7 +80,13 @@ export const Sidebar = ({ role, onLogout, isOpen = false, onClose }: SidebarProp
 				</ul>
 			</nav>
 
-			<button type="button" className={styles.logoutButton} onClick={onLogout} aria-label="Sair" title={!isOpen ? 'Sair' : undefined}>
+			<button
+				type="button"
+				className={styles.logoutButton}
+				onClick={onLogout}
+				aria-label="Sair"
+				data-tooltip={!isOpen ? 'Sair' : undefined}
+			>
 				<LogOut size={16} />
 				<span>Sair</span>
 			</button>

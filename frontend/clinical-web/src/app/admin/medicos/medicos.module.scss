@@ -12,7 +12,7 @@
   background: rgba(12, 18, 28, 0.42);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  z-index: 50;
+  z-index: 40;
 }
 
 .main {
@@ -158,6 +158,26 @@
   border: 1px solid #d4deea;
   background: #f8fafc;
   color: var(--portal-primary, #475569);
+}
+
+.successButton {
+  background: #166534;
+  box-shadow: 0 8px 18px rgba(22, 101, 52, 0.2);
+}
+
+.successButton:hover {
+  background: #14532d;
+}
+
+.cancelButton {
+  border-color: #fca5a5;
+  background: #fff1f2;
+  color: #9f1239;
+}
+
+.cancelButton:hover {
+  background: #ffe4e6;
+  border-color: #fb7185;
 }
 
 .filtersRow {

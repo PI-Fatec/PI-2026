@@ -30,6 +30,7 @@ export const useSidebarState = (options: SidebarStateOptions = {}) => {
   const { defaultOpen = false } = options;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -50,6 +51,7 @@ export const useSidebarState = (options: SidebarStateOptions = {}) => {
     };
 
     applyState();
+    setHasLoaded(true);
 
     if ('addEventListener' in media) {
       media.addEventListener('change', applyState);
@@ -62,6 +64,7 @@ export const useSidebarState = (options: SidebarStateOptions = {}) => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!hasLoaded) return;
     if (isMobile) return;
 
     try {
@@ -69,7 +72,7 @@ export const useSidebarState = (options: SidebarStateOptions = {}) => {
     } catch {
       // Ignore storage errors (private mode, quota, etc.)
     }
-  }, [isSidebarOpen, isMobile]);
+  }, [isSidebarOpen, isMobile, hasLoaded]);
 
   const openSidebar = useCallback(() => setIsSidebarOpen(true), []);
   const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);

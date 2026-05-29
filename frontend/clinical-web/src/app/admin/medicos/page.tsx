@@ -423,10 +423,10 @@ export default function AdminMedicosPage() {
           {error && <p className={styles.error}>{error}</p>}
 
           <div className={styles.formActions}>
-            <button type="button" className={styles.ghostButton} onClick={closeDoctorModal}>
+            <button type="button" className={`${styles.ghostButton} ${styles.cancelButton}`} onClick={closeDoctorModal}>
               Cancelar
             </button>
-            <button type="submit" className={styles.primaryButton} disabled={isSaving}>
+            <button type="submit" className={`${styles.primaryButton} ${styles.successButton}`} disabled={isSaving}>
               <Stethoscope size={16} />
               {isSaving ? 'Salvando...' : editingDoctor ? 'Salvar alteracoes' : 'Cadastrar medico'}
             </button>

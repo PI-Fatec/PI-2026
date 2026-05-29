@@ -25,6 +25,8 @@
   --portal-surface-muted: #f8fafc;
   --portal-header-bg: #ffffff;
   --portal-sidebar-bg: rgba(255, 255, 255, 0.68);
+  --portal-sidebar-glass-bg: linear-gradient(140deg, rgba(255, 255, 255, 0.7), rgba(226, 232, 240, 0.42));
+  --portal-sidebar-glass-border: rgba(148, 163, 184, 0.22);
   --portal-sidebar-border: rgba(148, 163, 184, 0.32);
   --portal-sidebar-text: #1e293b;
   --portal-sidebar-muted: #475569;
@@ -47,11 +49,13 @@
 
 :root[data-portal-theme='dark'] {
   color-scheme: dark;
-  --portal-bg: #0f172a;
+  --portal-bg: #0c1117;
   --portal-surface: #111827;
   --portal-surface-muted: #1e293b;
   --portal-header-bg: rgba(15, 23, 42, 0.88);
-  --portal-sidebar-bg: rgba(2, 6, 23, 0.68);
+  --portal-sidebar-bg: rgba(2, 6, 23, 0.58);
+  --portal-sidebar-glass-bg: linear-gradient(140deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.38));
+  --portal-sidebar-glass-border: rgba(148, 163, 184, 0.24);
   --portal-sidebar-border: rgba(148, 163, 184, 0.2);
   --portal-sidebar-text: #f8fafc;
   --portal-sidebar-muted: #cbd5e1;

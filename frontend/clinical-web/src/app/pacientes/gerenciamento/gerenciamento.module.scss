@@ -12,7 +12,7 @@
   background: rgba(12, 18, 28, 0.42);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  z-index: 50;
+  z-index: 40;
 }
 
 .main {
@@ -295,8 +295,24 @@
 
 .saveEditButton {
   border: none !important;
-  background: var(--portal-primary, #475569) !important;
+  background: #166534 !important;
   color: #fff !important;
+  box-shadow: 0 8px 18px rgba(22, 101, 52, 0.2);
+}
+
+.saveEditButton:hover {
+  background: #14532d !important;
+}
+
+.cancelButton {
+  border-color: #fca5a5 !important;
+  background: #fff1f2 !important;
+  color: #9f1239 !important;
+}
+
+.cancelButton:hover {
+  background: #ffe4e6 !important;
+  border-color: #fb7185 !important;
 }
 
 @include tablet {

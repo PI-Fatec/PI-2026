@@ -585,7 +585,7 @@ export default function GerenciamentoPacientesPage() {
 
             <div className={styles.sheetActions}>
               {editError && <p className={styles.editFeedbackError}>{editError}</p>}
-              <button type="button" onClick={closeSheet}>Cancelar</button>
+              <button type="button" className={styles.cancelButton} onClick={closeSheet}>Cancelar</button>
               <button type="button" className={styles.saveEditButton} onClick={handleSaveEdit} disabled={isSaving}>
                 {isSaving ? 'Salvando...' : 'Salvar alteracoes'}
               </button>

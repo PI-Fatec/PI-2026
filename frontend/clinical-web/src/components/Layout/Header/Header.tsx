@@ -35,6 +35,7 @@ export const Header = ({ userName, role, onMenuClick, onLogout, isSidebarOpen = 
   const searchParams = useSearchParams();
   const { theme, toggleTheme } = usePortalTheme();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [displayName, setDisplayName] = useState('Usuario');
   const profileRef = useRef<HTMLDivElement | null>(null);
   const SidebarIcon = isSidebarOpen ? PanelLeftClose : PanelLeftOpen;
   const ThemeIcon = theme === 'dark' ? Sun : Moon;
@@ -53,6 +54,10 @@ export const Header = ({ userName, role, onMenuClick, onLogout, isSidebarOpen = 
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
+
+  useEffect(() => {
+    setDisplayName(userName || 'Usuario');
+  }, [userName]);
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -101,9 +106,7 @@ export const Header = ({ userName, role, onMenuClick, onLogout, isSidebarOpen = 
           <ThemeIcon size={17} />
         </button>
 
-        <button type="button" className={styles.iconButton} aria-label="Filtros">
-          <SlidersHorizontal size={17} />
-        </button>
+  
 
         <div className={styles.profileWrapper} ref={profileRef}>
           <button
@@ -114,11 +117,11 @@ export const Header = ({ userName, role, onMenuClick, onLogout, isSidebarOpen = 
             aria-expanded={isProfileMenuOpen}
           >
             <div>
-              <strong>{userName}</strong>
+              <strong>{displayName}</strong>
               <span>{roleLabel[role]}</span>
             </div>
             <div className={styles.avatar} aria-hidden="true">
-              {getInitials(userName) || 'DR'}
+              {getInitials(displayName) || 'DR'}
             </div>
           </button>
 

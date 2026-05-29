@@ -224,7 +224,7 @@ export default function ConfiguracaoContaPage() {
               {success && <p className={styles.feedbackSuccess}>{success}</p>}
 
               <footer className={styles.actions}>
-                <button type="submit" disabled={isSaving}>
+                <button type="submit" className={styles.successButton} disabled={isSaving}>
                   {isSaving ? 'Salvando...' : 'Salvar alteracoes'}
                   <Save size={16} />
                 </button>
