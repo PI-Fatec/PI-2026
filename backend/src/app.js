@@ -6,6 +6,8 @@ const doctorRoutes = require('./routes/doctorRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const recordRoutes = require('./routes/recordRoutes');
 const accountRoutes = require('./routes/accountRoutes');
+const healthRoutes = require('./routes/healthRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
 
 const app = express();
 
@@ -22,5 +24,7 @@ app.use('/api/doctors', doctorRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/records', recordRoutes);
 app.use('/api/account', accountRoutes);
+app.use('/api/health', healthRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 module.exports = app;

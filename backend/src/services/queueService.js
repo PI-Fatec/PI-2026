@@ -1,4 +1,4 @@
-const { getChannel } = require('../config/rabbitmq');
+const { getChannel, QUEUE_NAME } = require('../config/rabbitmq');
 
 async function sendToAIQueue(data) {
   const channel = getChannel();
@@ -8,8 +8,8 @@ async function sendToAIQueue(data) {
   
   const payload = Buffer.from(JSON.stringify(data));
   // Envia os dados do paciente para a fila que o Python vai ler
-  channel.sendToQueue('health_data_queue', payload, { persistent: true });
-  console.log('Dados enviados para a fila da IA:', data.indicatorId);
+  channel.sendToQueue(QUEUE_NAME, payload, { persistent: true });
+  console.log('Dados enviados para a fila da IA:', data.requestId || data.indicatorId);
 }
 
 module.exports = { sendToAIQueue };

@@ -48,6 +48,13 @@ enum RiskLevel {
   BAIXO
 }
 
+enum HealthAnalysisStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
 enum HealthRecordType {
   glicemia
   pressao_arterial
@@ -72,6 +79,8 @@ model User {
   sentInvites     InviteToken[]  @relation("InviteSender")
   receivedInvites InviteToken[]  @relation("InviteReceiver")
   healthRecords   HealthRecord[] @relation("PatientRecords")
+  analysisRequestsRequested HealthAnalysisRequest[] @relation("AnalysisRequester")
+  analysisRequestsPatient   HealthAnalysisRequest[] @relation("AnalysisPatient")
 }
 
 model DoctorProfile {
@@ -114,6 +123,7 @@ model PatientProfile {
   doctorId           String?
   doctor             DoctorProfile?      @relation("DoctorPatients", fields: [doctorId], references: [id], onDelete: SetNull)
   records            HealthRecord[]      @relation("ProfileRecords")
+  analysisRequests   HealthAnalysisRequest[] @relation("AnalysisProfile")
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 }
@@ -150,4 +160,24 @@ model HealthRecord {
   updatedAt        DateTime          @updatedAt
 
   @@index([patientUserId, recordedAt])
+}
+
+model HealthAnalysisRequest {
+  id               String               @id @default(uuid())
+  patientUserId    String?
+  patientProfileId String?
+  requestedByUserId String?
+  status           HealthAnalysisStatus @default(PENDING)
+  payload          Json
+  result           Json?
+  error            String?
+  completedAt      DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  patient          User?           @relation("AnalysisPatient", fields: [patientUserId], references: [id], onDelete: SetNull)
+  patientProfile   PatientProfile? @relation("AnalysisProfile", fields: [patientProfileId], references: [id], onDelete: SetNull)
+  requestedBy      User?           @relation("AnalysisRequester", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([patientUserId, status])
 }
