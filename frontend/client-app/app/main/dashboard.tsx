@@ -12,7 +12,7 @@ type Period = 'dia' | 'semana';
 export default function DashboardScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const { records, deleteRecord } = useHealthRecords();
+  const { records, deleteRecord, isAnalyzingRisk, requestRiskAnalysis } = useHealthRecords();
   const [period, setPeriod] = useState<Period>('dia');
   const [editingRecord, setEditingRecord] = useState<HealthRecord | undefined>(undefined);
 
@@ -22,6 +22,10 @@ export default function DashboardScreen() {
   );
 
   const latestRecords = useMemo(() => records.slice(0, 6), [records]);
+  const latestRiskPrediction = useMemo(
+    () => records.find((record) => record.type === 'predicao_risco'),
+    [records]
+  );
 
   const chartWidth = Math.max(width - 72, 260);
   const chartData = {
@@ -40,6 +44,20 @@ export default function DashboardScreen() {
     0,
     Math.min(100, Math.round(100 - Math.max((glucoseRecords.at(-1)?.value ?? 90) - 140, 0) / 2))
   );
+
+  const riskPercent = latestRiskPrediction
+    ? Math.round(latestRiskPrediction.unit === 'prob' ? latestRiskPrediction.value * 100 : latestRiskPrediction.value)
+    : null;
+
+  const handleRequestRiskAnalysis = async () => {
+    try {
+      await requestRiskAnalysis();
+      Alert.alert('Analise solicitada', 'O resultado aparece no historico quando a IA finalizar.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Nao foi possivel concluir a analise.';
+      Alert.alert('Falha na analise', message);
+    }
+  };
 
   return (
     <ScrollView className="flex-1 bg-[#F3F4F6]" contentContainerClassName="px-5 pb-8 pt-14">
@@ -65,6 +83,23 @@ export default function DashboardScreen() {
             ? 'Continue registrando seus dados ao longo do dia para acompanhar tendencias.'
             : 'Na semana voce manteve um bom controle. Continue com hidratacao e rotina.'}
         </Text>
+      </View>
+
+      <View className="mt-4 rounded-3xl border border-[#D1D5DB] bg-white p-5">
+        <View className="flex-row items-center justify-between gap-3">
+          <View className="flex-1">
+            <Text className="text-lg font-semibold text-[#111827]">Risco metabolico</Text>
+            <Text className="mt-1 text-sm text-[#64748B]">
+              {riskPercent === null ? 'Sem predicao registrada' : `${riskPercent}% na ultima analise`}
+            </Text>
+          </View>
+          <Pressable
+            onPress={handleRequestRiskAnalysis}
+            disabled={isAnalyzingRisk}
+            className={`rounded-2xl px-4 py-3 ${isAnalyzingRisk ? 'bg-[#CBD5E1]' : 'bg-[#4F46E5]'}`}>
+            <Text className="font-semibold text-white">{isAnalyzingRisk ? 'Analisando...' : 'Analisar'}</Text>
+          </Pressable>
+        </View>
       </View>
 
       <View className="mt-8 rounded-3xl bg-white p-4">

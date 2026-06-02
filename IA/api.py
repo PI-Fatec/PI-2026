@@ -2,6 +2,7 @@ import json
 import os
 import pickle
 import threading
+import time
 from pathlib import Path
 
 import pika
@@ -122,13 +123,19 @@ def handle_message(channel, method, _properties, body):
 
 
 def consume_queue():
-	params = pika.URLParameters(RABBITMQ_URL)
-	connection = pika.BlockingConnection(params)
-	channel = connection.channel()
-	channel.queue_declare(queue=QUEUE_NAME, durable=True)
-	channel.basic_qos(prefetch_count=1)
-	channel.basic_consume(queue=QUEUE_NAME, on_message_callback=handle_message)
-	channel.start_consuming()
+	while True:
+		try:
+			params = pika.URLParameters(RABBITMQ_URL)
+			connection = pika.BlockingConnection(params)
+			channel = connection.channel()
+			channel.queue_declare(queue=QUEUE_NAME, durable=True)
+			channel.basic_qos(prefetch_count=1)
+			channel.basic_consume(queue=QUEUE_NAME, on_message_callback=handle_message)
+			print(f'Consumindo fila {QUEUE_NAME}')
+			channel.start_consuming()
+		except Exception as exc:
+			print(f'Falha ao consumir RabbitMQ: {exc}. Tentando novamente em 5s.')
+			time.sleep(5)
 
 
 @app.on_event('startup')

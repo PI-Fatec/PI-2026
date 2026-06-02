@@ -96,16 +96,43 @@ function buildFeaturesFromProfile(profile) {
   return { featureInput, dataQuality };
 }
 
+async function resolvePatientContext(req) {
+  if (req.auth.role === 'PATIENT') {
+    const profile = await prisma.patientProfile.findUnique({ where: { userId: req.auth.userId } });
+    return {
+      patientUserId: req.auth.userId,
+      profile,
+    };
+  }
+
+  const patientProfileId = req.body.patientProfileId ? String(req.body.patientProfileId) : null;
+  if (patientProfileId) {
+    const profile = await prisma.patientProfile.findUnique({ where: { id: patientProfileId } });
+    return {
+      patientUserId: profile?.userId || null,
+      profile,
+    };
+  }
+
+  const patientUserId = req.body.patientUserId ? String(req.body.patientUserId) : null;
+  if (patientUserId) {
+    const profile = await prisma.patientProfile.findUnique({ where: { userId: patientUserId } });
+    return {
+      patientUserId,
+      profile,
+    };
+  }
+
+  return {
+    patientUserId: null,
+    profile: null,
+  };
+}
+
 exports.createAnalysisRequest = async (req, res) => {
   try {
     const requestedByUserId = req.auth.userId;
-    const requestedPatientUserId = req.auth.role === 'PATIENT'
-      ? req.auth.userId
-      : (req.body.patientUserId ? String(req.body.patientUserId) : req.auth.userId);
-
-    const profile = requestedPatientUserId
-      ? await prisma.patientProfile.findUnique({ where: { userId: requestedPatientUserId } })
-      : null;
+    const { patientUserId: requestedPatientUserId, profile } = await resolvePatientContext(req);
 
     const incomingFeatures = req.body.features && typeof req.body.features === 'object'
       ? req.body.features
@@ -148,6 +175,7 @@ exports.createAnalysisRequest = async (req, res) => {
     await sendToAIQueue({
       requestId: request.id,
       patientUserId: requestedPatientUserId || null,
+      patientProfileId: profile?.id || null,
       requestedByUserId,
       features,
       requestedAt: new Date().toISOString(),

@@ -36,6 +36,8 @@ https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/da
 - Node.js 20+
 - npm 10+
 - PostgreSQL
+- RabbitMQ para o fluxo de IA
+- Docker e Docker Compose para o teste ponta a ponta com backend, fila e worker da IA
 
 ## Requisitos Funcionais
 
@@ -79,6 +81,9 @@ npm install
 PORT=3000
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/healthtrack?schema=public"
 JWT_SECRET="sua_chave_secreta_super_segura"
+RABBITMQ_URL="amqp://localhost:5672"
+RABBITMQ_HEALTH_QUEUE="health_data_queue"
+AI_WEBHOOK_SECRET="defina-um-segredo-compartilhado"
 
 # SMTP real para convites
 SMTP_HOST="smtp.seuprovedor.com"
@@ -131,13 +136,14 @@ Servidor padrao: http://localhost:3000
 cd backend
 ```
 
-2. Garanta que o `.env` tenha o host do PostgreSQL do Docker:
+2. Configure o `.env` normalmente. No Docker Compose, `DATABASE_URL` e `RABBITMQ_URL` sao sobrescritos para os hosts internos `postgres` e `rabbitmq`:
 
 ```env
 DATABASE_URL="postgresql://healthtrack:healthtrack@postgres:5432/healthtrack?schema=public"
+RABBITMQ_URL="amqp://rabbitmq:5672"
 ```
 
-Observacao: o `docker-compose.yml` ainda possui RabbitMQ para o fluxo legado de IA, mas o fluxo atual do backend nao depende dele.
+Observacao: o `docker-compose.yml` sobe PostgreSQL, RabbitMQ, backend e o worker Python da IA. O backend so inicia depois de conectar na fila.
 
 3. Suba os containers:
 
@@ -152,6 +158,107 @@ Esse fluxo ja executa `prisma db seed` no startup do backend para garantir o adm
 ```bash
 docker compose down
 ```
+
+## Teste ponta a ponta: backend -> fila -> IA -> backend
+
+1. Suba a stack completa:
+
+```bash
+cd backend
+docker compose up --build
+```
+
+2. Em outro terminal, confira os health checks:
+
+```bash
+curl http://localhost:3000/api/healthz
+curl http://localhost:8000/healthz
+```
+
+3. Crie um paciente de teste pelo backend:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register/self \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "PATIENT",
+    "name": "Paciente Teste IA",
+    "email": "paciente-ia@teste.com",
+    "password": "123456",
+    "cpf": "11122233344",
+    "dataNascimento": "1975-05-10",
+    "sexo": "Masculino",
+    "alturaCm": 175,
+    "pesoKg": 92,
+    "pressaoSistolica": 145,
+    "pressaoDiastolica": 92,
+    "fumante": true,
+    "atividadeFisica": false,
+    "historicoAvc": false,
+    "consumoAlcoolDoses": 8
+  }'
+```
+
+Copie o `token` retornado. Se esse e-mail/CPF ja existir, faca login:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"identifier":"paciente-ia@teste.com","password":"123456","portal":"MOBILE_APP"}'
+```
+
+4. Dispare a analise de risco. Substitua `<TOKEN>` pelo token do paciente:
+
+```bash
+curl -X POST http://localhost:3000/api/health/analysis \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{}'
+```
+
+A resposta esperada e `202` com `requestId` e `status: "PROCESSING"`.
+
+5. Consulte o status ate virar `DONE`:
+
+```bash
+curl http://localhost:3000/api/health/analysis/<REQUEST_ID> \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+6. Confirme que o webhook da IA atualizou o perfil e criou registro de predicao:
+
+```bash
+curl http://localhost:3000/api/records \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+Procure um item com `type: "predicao_risco"`. Nos logs, o caminho completo aparece assim:
+
+```bash
+docker compose logs -f backend ai-worker rabbitmq
+```
+
+## Teste pelos frontends
+
+### Web clinico
+
+```bash
+cd frontend/clinical-web
+npm install
+npm run dev
+```
+
+Abra http://localhost:3001, entre com o admin padrao (`admin@healthtrack.com` / `admin123`), va em **Pacientes > Gerenciamento** e clique no botao com icone de cerebro na linha do paciente. O web chama `POST /api/health/analysis` com `patientProfileId`, acompanha o status e recarrega a lista.
+
+### Mobile Expo
+
+```bash
+cd frontend/client-app
+npm install
+npm run start
+```
+
+Entre com o paciente no app e abra o dashboard. O botao **Analisar** chama `POST /api/health/analysis` com o token do paciente; quando a IA finalizar, o resultado aparece no historico como `predicao_risco`.
 
 ## Rotas principais (backend)
 
@@ -174,6 +281,9 @@ docker compose down
 - `POST /api/records`
 - `PUT /api/records/:id`
 - `DELETE /api/records/:id`
+- `POST /api/health/analysis`
+- `GET /api/health/analysis/:id`
+- `POST /api/webhooks/ai-results`
 
 ## Cuidados de dados
 
@@ -182,11 +292,9 @@ docker compose down
 
 ## Pendencias backend
 
-- Integrar a IA real para atualizar `risco` e `probabilidadeRisco`; o backend nao calcula mais risco por heuristica local.
-- Definir endpoint, worker ou rotina para a IA gravar o resultado de risco no `PatientProfile`.
 - Adicionar testes automatizados para autenticacao, auto-cadastro mobile, conta clinica, pacientes e registros.
 - Criar migrations formais do Prisma em vez de depender apenas de `db push`.
-- Limpar o fluxo legado `healthController`/`queueService`/RabbitMQ quando a integracao definitiva com IA estiver fechada.
+- Adicionar observabilidade para tentativas/reprocessamento da fila de IA.
 
 ## Scripts disponiveis no backend
 

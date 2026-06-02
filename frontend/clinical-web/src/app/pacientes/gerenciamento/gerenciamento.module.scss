@@ -196,6 +196,11 @@
     justify-content: center;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.55;
+    }
   }
 }
 

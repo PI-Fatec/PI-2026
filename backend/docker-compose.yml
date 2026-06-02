@@ -54,6 +54,38 @@ services:
       RABBITMQ_URL: "amqp://rabbitmq:5672"
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "300"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/healthz').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ai-worker:
+    build:
+      context: ../IA
+      dockerfile: Dockerfile
+    container_name: healthtrack-ai-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../IA:/app
+    environment:
+      RABBITMQ_URL: "amqp://rabbitmq:5672"
+      RABBITMQ_HEALTH_QUEUE: "health_data_queue"
+      BACKEND_AI_WEBHOOK_URL: "http://backend:3000/api/webhooks/ai-results"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:

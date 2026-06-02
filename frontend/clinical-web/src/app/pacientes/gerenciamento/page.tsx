@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Edit3, Eye, Trash2 } from 'lucide-react';
+import { Brain, Edit3, Eye, Trash2 } from 'lucide-react';
 import { Header } from '@/components/Layout/Header/Header';
 import { Sidebar } from '@/components/Layout/Sidebar/Sidebar';
 import { AlertDialog } from '@/components/ui/AlertDialog/AlertDialog';
@@ -94,10 +94,12 @@ export default function GerenciamentoPacientesPage() {
     isLoading,
     isSaving,
     error,
+    analysisPatientId,
     setFilters,
     resetFilters,
     updatePatient,
     removePatient,
+    requestRiskAnalysis,
   } = usePatients();
 
   const { isSidebarOpen, closeSidebar, toggleSidebar } = useSidebarState({ defaultOpen: false });
@@ -168,6 +170,24 @@ export default function GerenciamentoPacientesPage() {
 
   const handleRequestDelete = (patient: Patient) => {
     setPendingDelete(patient);
+  };
+
+  const handleRiskAnalysis = async (patient: Patient) => {
+    try {
+      const request = await requestRiskAnalysis(patient.id);
+      const qualityMessage = request.dataQuality?.length
+        ? `Campos estimados pelo backend: ${request.dataQuality.join(', ')}.`
+        : 'Os dados clinicos do paciente foram enviados para a IA.';
+
+      setToast({
+        variant: 'success',
+        title: request.status === 'DONE' ? 'Analise concluida' : 'Analise solicitada',
+        message: `${patient.nomeCompleto}: ${qualityMessage}`,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Nao foi possivel solicitar a analise.';
+      setToast({ variant: 'error', title: 'Falha na analise', message });
+    }
   };
 
   const handleResetFilters = () => {
@@ -412,6 +432,15 @@ export default function GerenciamentoPacientesPage() {
                           </button>
                           <button type="button" onClick={() => openEdit(patient)} aria-label="Editar">
                             <Edit3 size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRiskAnalysis(patient)}
+                            aria-label="Analisar risco com IA"
+                            title="Analisar risco com IA"
+                            disabled={analysisPatientId === patient.id}
+                          >
+                            <Brain size={16} />
                           </button>
                           <button
                             type="button"

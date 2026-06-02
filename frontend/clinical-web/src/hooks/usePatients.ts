@@ -13,12 +13,20 @@ const defaultFilters: PatientFilters = {
   dataFim: '',
 };
 
+const ANALYSIS_MAX_POLLS = 15;
+const ANALYSIS_POLL_INTERVAL_MS = 1200;
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const usePatients = () => {
   const { session } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [filters, setFilters] = useState<PatientFilters>(defaultFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [analysisPatientId, setAnalysisPatientId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadPatients = useCallback(
@@ -137,6 +145,46 @@ export const usePatients = () => {
     [session?.token],
   );
 
+  const requestRiskAnalysis = useCallback(
+    async (patientProfileId: string) => {
+      if (!session?.token) {
+        throw new Error('Sessao expirada. Faca login novamente.');
+      }
+
+      setAnalysisPatientId(patientProfileId);
+      setError(null);
+
+      try {
+        const createdRequest = await patientApi.requestRiskAnalysis(patientProfileId, session.token);
+        let lastStatus = createdRequest.status;
+
+        for (
+          let attempt = 0;
+          attempt < ANALYSIS_MAX_POLLS && ['PENDING', 'PROCESSING'].includes(lastStatus);
+          attempt += 1
+        ) {
+          await wait(ANALYSIS_POLL_INTERVAL_MS);
+          const current = await patientApi.getRiskAnalysisStatus(createdRequest.requestId, session.token);
+          lastStatus = current.status;
+
+          if (current.status === 'FAILED') {
+            throw new Error(current.error || 'A IA nao conseguiu concluir a analise.');
+          }
+        }
+
+        await loadPatients(filters);
+        return { ...createdRequest, status: lastStatus };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Nao foi possivel solicitar analise de risco.';
+        setError(message);
+        throw err;
+      } finally {
+        setAnalysisPatientId(null);
+      }
+    },
+    [filters, loadPatients, session?.token],
+  );
+
   const mergeFilters = useCallback((partial: Partial<PatientFilters>) => {
     setFilters((current) => ({ ...current, ...partial }));
   }, []);
@@ -159,11 +207,13 @@ export const usePatients = () => {
     summary,
     isLoading,
     isSaving,
+    analysisPatientId,
     error,
     createPatient,
     updatePatient,
     removePatient,
     getPatientById,
+    requestRiskAnalysis,
     setFilters: mergeFilters,
     resetFilters,
     reload: () => loadPatients(filters),

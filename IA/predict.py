@@ -42,8 +42,8 @@ def prever_risco_diabetes(paciente_data, modelo, scaler):
     return {
         'risco': 'COM DIABETES' if predicao == 1 else 'SEM DIABETES',
         'classe': int(predicao),
-        'prob_sem_diabetes': probabilidade[0],
-        'prob_com_diabetes': probabilidade[1],
+        'prob_sem_diabetes': float(probabilidade[0]),
+        'prob_com_diabetes': float(probabilidade[1]),
         'confianca': f"{max(probabilidade):.2%}"
     }
 

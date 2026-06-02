@@ -1,5 +1,6 @@
 import { NewPatientInput, Patient, PatientFilters, UpdatePatientInput } from '@/types/patient';
 import { apiRequest } from '@/services/apiClient';
+import { healthAnalysisApi } from '@/services/healthAnalysisApi';
 
 export const patientApi = {
   list(filters: PatientFilters, token: string) {
@@ -40,5 +41,13 @@ export const patientApi = {
       method: 'DELETE',
       token,
     });
+  },
+
+  requestRiskAnalysis(patientProfileId: string, token: string) {
+    return healthAnalysisApi.requestByPatientProfile(patientProfileId, token);
+  },
+
+  getRiskAnalysisStatus(requestId: string, token: string) {
+    return healthAnalysisApi.getStatus(requestId, token);
   },
 };
