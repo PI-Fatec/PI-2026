@@ -34,9 +34,13 @@ export interface RegisterInput {
   pressaoDiastolica?: number;
   glicemiaMgDl?: number;
   fumante?: boolean;
+  colesterolAlto?: boolean;
   atividadeFisica?: boolean;
   historicoAvc?: boolean;
-  diabetes?: boolean;
+  doencaCardiaca?: boolean;
+  consomeFrutas?: boolean;
+  consomeVegetais?: boolean;
+  dificuldadeCaminhar?: boolean;
   consumoAlcoolDoses?: number;
   estadoGeralSaude?: 'MUITO_BOM' | 'BOM' | 'ATENCAO' | 'CRITICO';
   status?: 'ATIVO' | 'INATIVO';

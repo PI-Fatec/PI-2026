@@ -191,6 +191,7 @@ function RecordRow({
     hour: '2-digit',
     minute: '2-digit',
   });
+  const isAiPrediction = record.type === 'predicao_risco';
 
   return (
     <View className="rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-3">
@@ -199,14 +200,16 @@ function RecordRow({
         {record.value} {record.unit} | {when}
       </Text>
       <Text className="mt-1 text-sm text-[#64748B]">{record.notes || 'Sem observações'}</Text>
-      <View className="mt-3 flex-row gap-2">
-        <Pressable onPress={onEdit} className="rounded-xl bg-[#DBEAFE] px-3 py-2">
-          <Text className="font-semibold text-[#1D4ED8]">Editar</Text>
-        </Pressable>
-        <Pressable onPress={onDelete} className="rounded-xl bg-[#FEE2E2] px-3 py-2">
-          <Text className="font-semibold text-[#B91C1C]">Deletar</Text>
-        </Pressable>
-      </View>
+      {!isAiPrediction ? (
+        <View className="mt-3 flex-row gap-2">
+          <Pressable onPress={onEdit} className="rounded-xl bg-[#DBEAFE] px-3 py-2">
+            <Text className="font-semibold text-[#1D4ED8]">Editar</Text>
+          </Pressable>
+          <Pressable onPress={onDelete} className="rounded-xl bg-[#FEE2E2] px-3 py-2">
+            <Text className="font-semibold text-[#B91C1C]">Deletar</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }

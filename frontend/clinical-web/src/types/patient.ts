@@ -24,9 +24,13 @@ export interface PatientBiometryStep {
 
 export interface PatientPredictorsStep {
   fumante: boolean;
+  colesterolAlto: boolean;
   atividadeFisica: boolean;
   historicoAvc: boolean;
-  diabetes: boolean;
+  doencaCardiaca: boolean;
+  consomeFrutas: boolean;
+  consomeVegetais: boolean;
+  dificuldadeCaminhar: boolean;
   consumoAlcoolDoses: number;
   estadoGeralSaude: HealthOverallStatus;
 }

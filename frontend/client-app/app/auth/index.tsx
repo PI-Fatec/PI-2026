@@ -1,11 +1,9 @@
-import { useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 
 import { AuthBackground } from '@/components/auth/auth-background';
 
 export default function AuthLandingScreen() {
-  const router = useRouter();
-
   return (
     <AuthBackground dimmed>
       <View className="flex-1 px-6">
@@ -20,17 +18,17 @@ export default function AuthLandingScreen() {
             O cuidado do amanhã, na palma da sua mão, hoje.
           </Text>
 
-          <Pressable
-            onPress={() => router.push('/auth/login')}
-            className="h-14 items-center justify-center rounded-full bg-[#2D8DE8]">
-            <Text className="text-xl font-semibold text-white">Fazer login</Text>
-          </Pressable>
+          <Link href="/auth/login" asChild>
+            <Pressable className="h-14 items-center justify-center rounded-full bg-[#2D8DE8]">
+              <Text className="text-xl font-semibold text-white">Fazer login</Text>
+            </Pressable>
+          </Link>
 
-          <Pressable
-            onPress={() => router.push('/auth/register')}
-            className="mt-3 h-14 items-center justify-center rounded-full border border-white/70 bg-white/10">
-            <Text className="text-lg font-semibold text-white">Criar conta</Text>
-          </Pressable>
+          <Link href="/auth/register" asChild>
+            <Pressable className="mt-3 h-14 items-center justify-center rounded-full border border-white/70 bg-white/10">
+              <Text className="text-lg font-semibold text-white">Criar conta</Text>
+            </Pressable>
+          </Link>
         </View>
       </View>
     </AuthBackground>

@@ -4,12 +4,15 @@ import { Alert, Pressable, Text, View } from 'react-native';
 
 import { AppHeader } from '@/components/main/app-header';
 import { useHealthRecords } from '@/providers/health-records-provider';
+import { usePatientProfile } from '@/providers/patient-profile-provider';
 import { useSession } from '@/providers/session-provider';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { userName } = useSession();
   const { records } = useHealthRecords();
+  const { account } = usePatientProfile();
+  const profile = account?.patientProfile;
   const latestGlucose = records.find((record) => record.type === 'glicemia');
   const formattedRecordedAt = latestGlucose
     ? new Date(latestGlucose.recordedAt).toLocaleString('pt-BR', {
@@ -32,27 +35,27 @@ export default function HomeScreen() {
       <Pressable
         onPress={() => router.push('/main/add-info')}
         className="mt-8 rounded-[28px] bg-[#0F2859] px-6 py-8">
-        <Text className="text-sm text-[#D1D5DB]">{formattedRecordedAt ?? 'Sem registro recente'}</Text>
+        <Text className="text-sm text-[#D1D5DB]">{profile ? 'Perfil clínico atual' : formattedRecordedAt ?? 'Sem dados recentes'}</Text>
         <View className="mt-3 flex-row items-end gap-2">
-          <Text className="text-5xl font-extrabold text-white">{latestGlucose?.value ?? '--'}</Text>
+          <Text className="text-5xl font-extrabold text-white">{profile?.glicemiaMgDl ?? latestGlucose?.value ?? '--'}</Text>
           <Text className="mb-1 text-xl font-semibold text-[#D1D5DB]">
-            {latestGlucose?.unit ?? '--'}
+            {profile ? 'mg/dL' : latestGlucose?.unit ?? '--'}
           </Text>
         </View>
-        <Text className="mt-3 text-base font-semibold text-[#93C5FD]">Adicionar Novo</Text>
+        <Text className="mt-3 text-base font-semibold text-[#93C5FD]">Atualizar dados de saúde</Text>
       </Pressable>
 
       <Text className="mt-8 text-2xl font-semibold text-[#1F2937]">Ações Rápidas</Text>
       <View className="mt-4 flex-row gap-3">
         <QuickAction
-          label="Registrar Glicemia"
-          icon="water-outline"
-          onPress={() => router.push('/main/add-info?type=glicemia')}
+          label="Dados de Saúde"
+          icon="create-outline"
+          onPress={() => router.push('/main/add-info')}
         />
         <QuickAction
-          label="Registrar Pressão"
+          label="Meu Perfil"
           icon="heart-outline"
-          onPress={() => router.push('/main/add-info?type=pressao_arterial')}
+          onPress={() => router.push('/main/profile')}
         />
         <QuickAction
           label="Ver Dashboard"

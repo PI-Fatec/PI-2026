@@ -30,6 +30,7 @@ export default function HistoryScreen() {
             hour: '2-digit',
             minute: '2-digit',
           });
+          const isAiPrediction = record.type === 'predicao_risco';
 
           return (
             <View key={record.id} className="rounded-2xl border border-[#E5E7EB] bg-white p-4">
@@ -42,21 +43,23 @@ export default function HistoryScreen() {
               <Text className="mt-2 text-sm text-[#475569]">{when}</Text>
               <Text className="mt-1 text-sm text-[#64748B]">{record.notes || 'Sem observações'}</Text>
 
-              <View className="mt-4 flex-row gap-2">
-                <Pressable onPress={() => setEditingRecord(record)} className="rounded-xl bg-[#DBEAFE] px-3 py-2">
-                  <Text className="font-semibold text-[#1D4ED8]">Editar</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    Alert.alert('Excluir registro', 'Deseja remover este registro?', [
-                      { text: 'Cancelar', style: 'cancel' },
-                      { text: 'Excluir', style: 'destructive', onPress: () => deleteRecord(record.id) },
-                    ]);
-                  }}
-                  className="rounded-xl bg-[#FEE2E2] px-3 py-2">
-                  <Text className="font-semibold text-[#B91C1C]">Deletar</Text>
-                </Pressable>
-              </View>
+              {!isAiPrediction ? (
+                <View className="mt-4 flex-row gap-2">
+                  <Pressable onPress={() => setEditingRecord(record)} className="rounded-xl bg-[#DBEAFE] px-3 py-2">
+                    <Text className="font-semibold text-[#1D4ED8]">Editar</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      Alert.alert('Excluir registro', 'Deseja remover este registro?', [
+                        { text: 'Cancelar', style: 'cancel' },
+                        { text: 'Excluir', style: 'destructive', onPress: () => deleteRecord(record.id) },
+                      ]);
+                    }}
+                    className="rounded-xl bg-[#FEE2E2] px-3 py-2">
+                    <Text className="font-semibold text-[#B91C1C]">Deletar</Text>
+                  </Pressable>
+                </View>
+              ) : null}
             </View>
           );
         })}

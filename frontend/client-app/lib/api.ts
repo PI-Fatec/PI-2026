@@ -27,6 +27,7 @@ interface RequestOptions {
   token?: string;
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined>;
+  timeoutMs?: number;
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -38,14 +39,30 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       ).toString()}`
     : '';
 
-  const response = await fetch(`${API_BASE_URL}${path}${query}`, {
-    method: options.method ?? 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 12000);
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}${query}`, {
+      method: options.method ?? 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Tempo esgotado ao conectar em ${API_BASE_URL}. Verifique se o backend esta rodando.`);
+    }
+
+    throw new Error(`Nao foi possivel conectar em ${API_BASE_URL}. Verifique a URL da API.`);
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));

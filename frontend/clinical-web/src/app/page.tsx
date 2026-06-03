@@ -44,6 +44,11 @@ function formatUpdatedAt(value: string) {
   });
 }
 
+function getPercent(count: number, total: number) {
+  if (!total) return 0;
+  return Math.round((count / total) * 100);
+}
+
 export default function Home() {
   const router = useRouter();
   const { session, logout } = useAuth();
@@ -58,6 +63,42 @@ export default function Home() {
     [patients, visiblePatients],
   );
   const hasMorePatients = visiblePatients < patients.length;
+  const riskStats = useMemo(() => {
+    const total = patients.length;
+    const counts = {
+      ALTO: patients.filter((patient) => patient.risco === 'ALTO').length,
+      MEDIO: patients.filter((patient) => patient.risco === 'MEDIO').length,
+      BAIXO: patients.filter((patient) => patient.risco === 'BAIXO').length,
+    };
+    const percentages = {
+      ALTO: getPercent(counts.ALTO, total),
+      MEDIO: getPercent(counts.MEDIO, total),
+      BAIXO: getPercent(counts.BAIXO, total),
+    };
+    const averageProbability = total
+      ? Math.round((patients.reduce((sum, patient) => sum + patient.probabilidadeRisco, 0) / total) * 100)
+      : 0;
+    const highestRiskPatient = patients.reduce<(typeof patients)[number] | null>((highest, patient) => {
+      if (!highest || patient.probabilidadeRisco > highest.probabilidadeRisco) {
+        return patient;
+      }
+
+      return highest;
+    }, null);
+    const lowEnd = percentages.BAIXO;
+    const mediumEnd = percentages.BAIXO + percentages.MEDIO;
+
+    return {
+      total,
+      counts,
+      percentages,
+      averageProbability,
+      highestRiskPatient,
+      ringBackground: total
+        ? `conic-gradient(#8ace57 0 ${lowEnd}%, #f6a44d ${lowEnd}% ${mediumEnd}%, #ea6262 ${mediumEnd}% 100%)`
+        : 'conic-gradient(#dbe4f1 0 100%)',
+    };
+  }, [patients]);
 
   const handleLogout = () => {
     logout();
@@ -114,9 +155,11 @@ export default function Home() {
             </article>
 
             <article className={`${styles.card} ${styles.aiCard}`}>
-              <h3>AI System Status</h3>
-              <strong>Indisponivel</strong>
-              <p>Sem endpoint dedicado no momento</p>
+              <h3>AI Predicted Risk</h3>
+              <strong>
+                {isLoading ? <Spinner size="md" className={styles.metricSpinner} /> : `${riskStats.averageProbability}%`}
+              </strong>
+              <p>{isLoading ? 'Carregando dados...' : 'Media de probabilidade na base'}</p>
             </article>
           </section>
 
@@ -188,11 +231,44 @@ export default function Home() {
 
             <aside className={`${styles.panel} ${styles.sidePanel}`}>
               <h3>AI Predicted Risk</h3>
-              <p className={styles.placeholderText}>Dados indisponiveis no momento.</p>
+              {isLoading ? (
+                <span className={styles.loadingInline}>
+                  <Spinner size="sm" />
+                  Carregando distribuicao...
+                </span>
+              ) : riskStats.total === 0 ? (
+                <p className={styles.placeholderText}>Nenhum paciente disponivel.</p>
+              ) : (
+                <>
+                  <div className={styles.ring} style={{ background: riskStats.ringBackground }}>
+                    <div>{riskStats.averageProbability}%</div>
+                  </div>
 
-              <div className={styles.placeholderBox}>
-                O painel de distribuicao de risco sera exibido aqui quando o endpoint de analytics estiver disponivel.
-              </div>
+                  <div className={styles.legendRow}>
+                    <span><i style={{ background: '#ea6262' }} /> Alto</span>
+                    <strong>{riskStats.counts.ALTO} ({riskStats.percentages.ALTO}%)</strong>
+                  </div>
+                  <div className={styles.legendRow}>
+                    <span><i style={{ background: '#f6a44d' }} /> Medio</span>
+                    <strong>{riskStats.counts.MEDIO} ({riskStats.percentages.MEDIO}%)</strong>
+                  </div>
+                  <div className={styles.legendRow}>
+                    <span><i style={{ background: '#8ace57' }} /> Baixo</span>
+                    <strong>{riskStats.counts.BAIXO} ({riskStats.percentages.BAIXO}%)</strong>
+                  </div>
+
+                  <div className={styles.insight}>
+                    Pacientes com risco alto
+                    <strong>{riskStats.counts.ALTO}</strong>
+                    {riskStats.highestRiskPatient && (
+                      <span>
+                        Maior probabilidade: {riskStats.highestRiskPatient.nomeCompleto} (
+                        {Math.round(riskStats.highestRiskPatient.probabilidadeRisco * 100)}%).
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </aside>
           </section>
         </div>
