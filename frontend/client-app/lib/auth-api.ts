@@ -22,6 +22,16 @@ export type PatientRegisterPayload = {
   telefone?: string;
 };
 
+export type InviteValidationPayload = {
+  valid: boolean;
+  role: 'DOCTOR' | 'PATIENT';
+  email: string;
+  cpf?: string | null;
+  dataNascimento?: string | null;
+  sexo?: 'Masculino' | 'Feminino' | 'Outro' | null;
+  expiresAt: string;
+};
+
 export const authApi = {
   login(identifier: string, password: string) {
     return apiRequest<AuthPayload>('/api/auth/login', {
@@ -41,7 +51,7 @@ export const authApi = {
   },
 
   validateInvite(token: string) {
-    return apiRequest<{ valid: boolean; role: 'DOCTOR' | 'PATIENT'; email: string; expiresAt: string }>('/api/invites/validate', {
+    return apiRequest<InviteValidationPayload>('/api/invites/validate', {
       query: { token },
     });
   },

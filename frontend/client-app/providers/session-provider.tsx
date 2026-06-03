@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, type PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
 
-import { authApi, AppRole, type PatientRegisterPayload } from '@/lib/auth-api';
+import { authApi, AppRole, type InviteValidationPayload, type PatientRegisterPayload } from '@/lib/auth-api';
 
 const TOKEN_KEY = '@healthtrack:token';
 const ONBOARDING_KEY = '@healthtrack:onboarding-complete';
@@ -37,7 +37,7 @@ type SessionContextValue = {
     dataNascimento?: string;
     sexo?: 'Masculino' | 'Feminino' | 'Outro';
   }) => Promise<void>;
-  validateInvite: (token: string) => Promise<{ valid: boolean; role: 'DOCTOR' | 'PATIENT'; email: string; expiresAt: string }>;
+  validateInvite: (token: string) => Promise<InviteValidationPayload>;
   signOut: () => Promise<void>;
 };
 

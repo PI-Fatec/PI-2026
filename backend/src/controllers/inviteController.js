@@ -342,6 +342,8 @@ exports.validateInvite = async (req, res) => {
       role: invite.role,
       email: invite.email,
       cpf: invite.invitedUser?.patientProfile?.cpf ?? null,
+      dataNascimento: invite.invitedUser?.patientProfile?.dataNascimento ?? null,
+      sexo: invite.invitedUser?.patientProfile?.sexo ?? null,
       expiresAt: invite.expiresAt,
     });
   } catch (error) {
