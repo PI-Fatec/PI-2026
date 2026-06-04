@@ -11,6 +11,11 @@ const publicRoutes = [
   '/recuperar-senha',
 ];
 
+const inviteRoutes = [
+  '/convite/aceitar',
+  '/convite/app',
+];
+
 const ALLOWED_ROLES = new Set(['ADMIN', 'DOCTOR']);
 
 function clearSessionCookies(response: NextResponse) {
@@ -25,7 +30,18 @@ export default function proxy(request: NextRequest) {
   const role = request.cookies.get('role')?.value;
   const { pathname } = request.nextUrl;
 
-  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+
+  const isInviteRoute = inviteRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+
+  // Convite precisa ser público sempre, mesmo se existir cookie antigo/inválido.
+  if (isInviteRoute) {
+    return NextResponse.next();
+  }
 
   // No token: only public routes are accessible.
   if (!token) {
@@ -45,8 +61,8 @@ export default function proxy(request: NextRequest) {
     return response;
   }
 
-  // Authenticated doctor/admin should not access auth pages (except invite flows).
-  if (isPublicRoute && pathname !== '/convite/aceitar' && pathname !== '/convite/app') {
+  // Authenticated doctor/admin should not access auth pages.
+  if (isPublicRoute) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -56,4 +72,3 @@ export default function proxy(request: NextRequest) {
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
-
