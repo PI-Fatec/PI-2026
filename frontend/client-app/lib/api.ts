@@ -1,9 +1,23 @@
 import Constants from 'expo-constants';
 
+function normalizeApiBaseUrl(baseUrl: string) {
+  const trimmedBaseUrl = baseUrl.trim().replace(/\/+$/, '');
+
+  if (trimmedBaseUrl.startsWith('//')) {
+    return `https:${trimmedBaseUrl}`;
+  }
+
+  if (!/^https?:\/\//i.test(trimmedBaseUrl)) {
+    return `https://${trimmedBaseUrl}`;
+  }
+
+  return trimmedBaseUrl;
+}
+
 function resolveApiBaseUrl() {
   const envBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (envBaseUrl) {
-    return envBaseUrl;
+    return normalizeApiBaseUrl(envBaseUrl);
   }
 
   const expoConfigHostUri = (Constants.expoConfig as { hostUri?: string } | null)?.hostUri;

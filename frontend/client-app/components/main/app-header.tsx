@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 type AppHeaderProps = {
   title?: string;
   actionLabel?: string;
+  actionIcon?: keyof typeof Ionicons.glyphMap;
   onPressAction?: () => void;
   onPressNotifications?: () => void;
   showBackButton?: boolean;
@@ -16,12 +17,11 @@ type AppHeaderProps = {
 export function AppHeader({
   title,
   actionLabel = 'Acao',
+  actionIcon,
   onPressAction,
-  onPressNotifications,
   showBackButton = false,
   onPressBack,
   showAction = true,
-  showNotifications = true,
 }: AppHeaderProps) {
   return (
     <View>
@@ -45,16 +45,9 @@ export function AppHeader({
           {showAction ? (
             <Pressable
               onPress={onPressAction}
-              className="rounded-full bg-[#DBEAFE] px-4 py-2 active:bg-[#BFDBFE]">
+              className="flex-row items-center gap-1.5 rounded-full bg-[#DBEAFE] px-4 py-2 active:bg-[#BFDBFE]">
+              {actionIcon ? <Ionicons name={actionIcon} size={16} color="#1D4ED8" /> : null}
               <Text className="text-sm font-semibold text-[#1D4ED8]">{actionLabel}</Text>
-            </Pressable>
-          ) : null}
-          {showNotifications ? (
-            <Pressable
-              onPress={onPressNotifications}
-              className="h-10 w-10 items-center justify-center rounded-full bg-white">
-              <Ionicons name="notifications-outline" size={20} color="#0F172A" />
-              <View className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#EF4444]" />
             </Pressable>
           ) : null}
         </View>

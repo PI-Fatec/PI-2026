@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 import { healthAnalysisApi } from '@/lib/health-analysis-api';
 import { recordsApi } from '@/lib/records-api';
+import { usePatientProfile } from '@/providers/patient-profile-provider';
 import { useSession } from '@/providers/session-provider';
 import { HealthRecord, HealthRecordType, HealthRecordTypeMeta, UpsertHealthRecordInput } from '@/types/record';
 
@@ -40,6 +41,7 @@ const HealthRecordsContext = createContext<HealthRecordsContextValue | null>(nul
 
 export function HealthRecordsProvider({ children }: PropsWithChildren) {
   const { token } = useSession();
+  const { reloadProfile } = usePatientProfile();
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAnalyzingRisk, setIsAnalyzingRisk] = useState(false);
@@ -86,11 +88,11 @@ export function HealthRecordsProvider({ children }: PropsWithChildren) {
         }
       }
 
-      await reloadRecords();
+      await Promise.all([reloadRecords(), reloadProfile()]);
     } finally {
       setIsAnalyzingRisk(false);
     }
-  }, [reloadRecords, token]);
+  }, [reloadProfile, reloadRecords, token]);
 
   const value = useMemo<HealthRecordsContextValue>(
     () => ({

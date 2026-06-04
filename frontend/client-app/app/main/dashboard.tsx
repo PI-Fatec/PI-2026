@@ -1,219 +1,412 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
-import LineChart from 'react-native-chart-kit/dist/line-chart';
+import { useMemo } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { AppHeader } from '@/components/main/app-header';
-import { RecordEditSheet } from '@/components/main/record-edit-sheet';
-import { getRecordTypeMeta, useHealthRecords, type HealthRecord } from '@/providers/health-records-provider';
+import { useHealthRecords } from '@/providers/health-records-provider';
+import { usePatientProfile } from '@/providers/patient-profile-provider';
 
-type Period = 'dia' | 'semana';
+const riskColor = {
+  ALTO: 'text-[#B91C1C]',
+  MEDIO: 'text-[#B45309]',
+  BAIXO: 'text-[#166534]',
+};
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const { records, deleteRecord, isAnalyzingRisk, requestRiskAnalysis } = useHealthRecords();
-  const [period, setPeriod] = useState<Period>('dia');
-  const [editingRecord, setEditingRecord] = useState<HealthRecord | undefined>(undefined);
+  const { isAnalyzingRisk, requestRiskAnalysis } = useHealthRecords();
+  const { account } = usePatientProfile();
+  const profile = account?.patientProfile;
 
-  const glucoseRecords = useMemo(
-    () => records.filter((record) => record.type === 'glicemia').sort(sortByDateAsc),
-    [records]
-  );
-
-  const latestRecords = useMemo(() => records.slice(0, 6), [records]);
-  const latestRiskPrediction = useMemo(
-    () => records.find((record) => record.type === 'predicao_risco'),
-    [records]
-  );
-
-  const chartWidth = Math.max(width - 72, 260);
-  const chartData = {
-    labels: glucoseRecords.map((record) => {
-      const date = new Date(record.recordedAt);
-      return `${String(date.getHours()).padStart(2, '0')}h`;
-    }),
-    datasets: [
-      {
-        data: glucoseRecords.map((record) => record.value),
-      },
-    ],
-  };
-
-  const score = Math.max(
-    0,
-    Math.min(100, Math.round(100 - Math.max((glucoseRecords.at(-1)?.value ?? 90) - 140, 0) / 2))
-  );
-
-  const riskPercent = latestRiskPrediction
-    ? Math.round(latestRiskPrediction.unit === 'prob' ? latestRiskPrediction.value * 100 : latestRiskPrediction.value)
-    : null;
+  const riskPercent = profile ? Math.round(profile.probabilidadeRisco * 100) : null;
 
   const handleRequestRiskAnalysis = async () => {
     try {
       await requestRiskAnalysis();
-      Alert.alert('Analise solicitada', 'O resultado aparece no historico quando a IA finalizar.');
+      Alert.alert('Análise concluída', 'O risco foi atualizado no seu perfil.');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Nao foi possivel concluir a analise.';
-      Alert.alert('Falha na analise', message);
+      const message = error instanceof Error ? error.message : 'Não foi possível concluir a análise.';
+      Alert.alert('Falha na análise', message);
     }
   };
 
   return (
     <ScrollView className="flex-1 bg-[#F3F4F6]" contentContainerClassName="px-5 pb-8 pt-14">
-      <AppHeader
-        actionLabel="Add info"
-        onPressAction={() => router.push('/main/add-info')}
-        onPressNotifications={() => Alert.alert('Notificacoes', 'Lembrete de medicao em 30 minutos.')}
-      />
-
-      <View className="mt-5 flex-row rounded-full bg-[#E5E7EB] p-1">
-        <PeriodButton active={period === 'dia'} label="Dia" onPress={() => setPeriod('dia')} />
-        <PeriodButton active={period === 'semana'} label="Semana" onPress={() => setPeriod('semana')} />
-      </View>
-
-      <View className="mt-4 rounded-3xl border border-[#D1D5DB] bg-[#EEF2FF] p-5">
-        <Text className="text-xl font-semibold text-[#111827]">Pontuacao de Saude</Text>
-        <View className="mt-4 flex-row items-end gap-2">
-          <Text className="text-4xl font-extrabold text-[#166534]">{score}</Text>
-          <Text className="mb-1 text-sm font-semibold text-[#15803D]">Excelente</Text>
-        </View>
-        <Text className="mt-4 rounded-2xl bg-white px-3 py-2 text-sm text-[#334155]">
-          {period === 'dia'
-            ? 'Continue registrando seus dados ao longo do dia para acompanhar tendencias.'
-            : 'Na semana voce manteve um bom controle. Continue com hidratacao e rotina.'}
-        </Text>
-      </View>
+      <AppHeader actionIcon="add-outline" actionLabel="Adicionar" onPressAction={() => router.push('/main/add-info')} />
 
       <View className="mt-4 rounded-3xl border border-[#D1D5DB] bg-white p-5">
         <View className="flex-row items-center justify-between gap-3">
           <View className="flex-1">
-            <Text className="text-lg font-semibold text-[#111827]">Risco metabolico</Text>
+            <Text className="text-lg font-semibold text-[#111827]">Risco metabólico</Text>
+
             <Text className="mt-1 text-sm text-[#64748B]">
-              {riskPercent === null ? 'Sem predicao registrada' : `${riskPercent}% na ultima analise`}
+              {riskPercent === null ? 'Sem predição registrada' : `${riskPercent}% no perfil atual`}
             </Text>
+
+            {profile ? (
+              <Text className={`mt-2 text-sm font-bold ${riskColor[profile.risco]}`}>
+                {profile.risco}
+              </Text>
+            ) : null}
           </View>
+
           <Pressable
             onPress={handleRequestRiskAnalysis}
             disabled={isAnalyzingRisk}
-            className={`rounded-2xl px-4 py-3 ${isAnalyzingRisk ? 'bg-[#CBD5E1]' : 'bg-[#4F46E5]'}`}>
-            <Text className="font-semibold text-white">{isAnalyzingRisk ? 'Analisando...' : 'Analisar'}</Text>
+            className={`rounded-2xl px-4 py-3 ${isAnalyzingRisk ? 'bg-[#CBD5E1]' : 'bg-[#4F46E5]'}`}
+          >
+            <Text className="font-semibold text-white">
+              {isAnalyzingRisk ? 'Analisando...' : 'Analisar'}
+            </Text>
           </Pressable>
         </View>
       </View>
 
       <View className="mt-8 rounded-3xl bg-white p-4">
-        <Text className="text-2xl font-semibold text-[#111827]">Ultimos Registros de Glicemia</Text>
+        <Text className="text-2xl font-semibold text-[#111827]">Perfil de risco atual</Text>
 
-        {glucoseRecords.length > 1 ? (
-          <LineChart
-            data={chartData}
-            width={chartWidth}
-            height={220}
-            yAxisSuffix=""
-            withShadow
-            withInnerLines
-            withOuterLines={false}
-            chartConfig={{
-              backgroundGradientFrom: '#FFFFFF',
-              backgroundGradientTo: '#FFFFFF',
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(56, 189, 248, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
-              propsForDots: {
-                r: '4',
-                strokeWidth: '2',
-                stroke: '#38BDF8',
-              },
-            }}
-            bezier
-            style={{ marginTop: 14, borderRadius: 12 }}
-          />
+        <Text className="mt-2 text-sm text-[#6B7280]">
+          Quanto maior a barra, maior a atenção necessária naquele eixo.
+        </Text>
+
+        {profile ? (
+          <RiskProfileBars profile={profile as Record<string, unknown>} />
         ) : (
-          <Text className="mt-4 text-sm text-[#6B7280]">Registre mais valores para visualizar o grafico.</Text>
+          <Text className="mt-4 text-sm text-[#6B7280]">
+            Preencha seus dados de saúde para visualizar seu perfil de risco.
+          </Text>
         )}
       </View>
-
-      <View className="mt-8 rounded-3xl bg-white p-4">
-        <Text className="text-xl font-semibold text-[#111827]">Lista de ultimos registros</Text>
-        <View className="mt-3 gap-3">
-          {latestRecords.map((record) => (
-            <RecordRow
-              key={record.id}
-              record={record}
-              onEdit={() => setEditingRecord(record)}
-              onDelete={() => {
-                Alert.alert('Excluir registro', 'Deseja remover este registro?', [
-                  { text: 'Cancelar', style: 'cancel' },
-                  { text: 'Excluir', style: 'destructive', onPress: () => deleteRecord(record.id) },
-                ]);
-              }}
-            />
-          ))}
-
-          {latestRecords.length === 0 ? (
-            <Text className="text-sm text-[#6B7280]">Sem registros ainda. Adicione seu primeiro dado.</Text>
-          ) : null}
-        </View>
-      </View>
-
-      <RecordEditSheet
-        visible={Boolean(editingRecord)}
-        record={editingRecord}
-        onClose={() => setEditingRecord(undefined)}
-      />
     </ScrollView>
   );
 }
 
-function PeriodButton({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      className={`flex-1 items-center rounded-full py-2 ${active ? 'bg-[#4F46E5]' : 'bg-transparent'}`}>
-      <Text className={`font-semibold ${active ? 'text-white' : 'text-[#111827]'}`}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function RecordRow({
-  record,
-  onEdit,
-  onDelete,
-}: {
-  record: HealthRecord;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const when = new Date(record.recordedAt).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  const isAiPrediction = record.type === 'predicao_risco';
+function RiskProfileBars({ profile }: { profile: Record<string, unknown> }) {
+  const data = useMemo(() => buildRiskProfileData(profile), [profile]);
 
   return (
-    <View className="rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-3">
-      <Text className="text-base font-semibold text-[#111827]">{getRecordTypeMeta(record.type).label}</Text>
-      <Text className="mt-1 text-[#334155]">
-        {record.value} {record.unit} | {when}
-      </Text>
-      <Text className="mt-1 text-sm text-[#64748B]">{record.notes || 'Sem observações'}</Text>
-      {!isAiPrediction ? (
-        <View className="mt-3 flex-row gap-2">
-          <Pressable onPress={onEdit} className="rounded-xl bg-[#DBEAFE] px-3 py-2">
-            <Text className="font-semibold text-[#1D4ED8]">Editar</Text>
-          </Pressable>
-          <Pressable onPress={onDelete} className="rounded-xl bg-[#FEE2E2] px-3 py-2">
-            <Text className="font-semibold text-[#B91C1C]">Deletar</Text>
-          </Pressable>
-        </View>
-      ) : null}
+    <View className="mt-5 gap-4">
+      {data.map((item) => {
+        const level = getRiskLevel(item.value);
+
+        return (
+          <View key={item.label} className="rounded-2xl border border-[#E5E7EB] bg-[#F8FAFC] p-4">
+            <View className="mb-3 flex-row items-start justify-between gap-3">
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-[#111827]">{item.label}</Text>
+                <Text className="mt-1 text-xs text-[#64748B]">{item.description}</Text>
+              </View>
+
+              <View className={`rounded-full px-3 py-1 ${level.badgeClass}`}>
+                <Text className={`text-xs font-bold ${level.textClass}`}>{level.label}</Text>
+              </View>
+            </View>
+
+            <View className="flex-row items-center gap-3">
+              <View className="h-3 flex-1 overflow-hidden rounded-full bg-[#E5E7EB]">
+                <View
+                  className={`h-full rounded-full ${level.barClass}`}
+                  style={{ width: `${item.value}%` }}
+                />
+              </View>
+
+              <Text className="w-10 text-right text-sm font-bold text-[#111827]">
+                {item.value}%
+              </Text>
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
 }
 
-function sortByDateAsc(a: HealthRecord, b: HealthRecord) {
-  return new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime();
+function buildRiskProfileData(profile: Record<string, unknown>) {
+  const glucose = getNumber(profile, ['glicemia', 'glucose', 'bloodGlucose', 'glicemiaJejum']);
+  const bmi = getBmi(profile);
+
+  const systolic = getNumber(profile, [
+    'pressaoSistolica',
+    'sistolica',
+    'systolic',
+    'bloodPressureSystolic',
+  ]);
+
+  const diastolic = getNumber(profile, [
+    'pressaoDiastolica',
+    'diastolica',
+    'diastolic',
+    'bloodPressureDiastolic',
+  ]);
+
+  const doesExercise = getBoolean(profile, [
+    'praticaAtividadeFisica',
+    'atividadeFisica',
+    'physicalActivity',
+    'doesExercise',
+  ]);
+
+  const consumesFruit = getBoolean(profile, [
+    'consomeFrutas',
+    'consumoFrutas',
+    'fruits',
+    'consumeFruits',
+  ]);
+
+  const consumesVegetables = getBoolean(profile, [
+    'consomeVegetais',
+    'consumoVegetais',
+    'vegetables',
+    'consumeVegetables',
+  ]);
+
+  const smoker = getBoolean(profile, ['fumante', 'smoker']);
+  const highCholesterol = getBoolean(profile, ['colesterolAlto', 'highCholesterol']);
+  const strokeHistory = getBoolean(profile, ['historicoAvc', 'avc', 'strokeHistory']);
+  const heartDisease = getBoolean(profile, ['doencaCardiaca', 'heartDisease']);
+
+  return [
+    {
+      label: 'Glicemia',
+      value: calculateGlucoseRisk(glucose),
+      description: glucose
+        ? `Valor atual considerado: ${glucose} mg/dL.`
+        : 'Nenhum valor de glicemia informado.',
+    },
+    {
+      label: 'IMC',
+      value: calculateBmiRisk(bmi),
+      description: bmi
+        ? `IMC estimado: ${bmi.toFixed(1)}.`
+        : 'Peso e altura não informados para calcular o IMC.',
+    },
+    {
+      label: 'Pressão',
+      value: calculatePressureRisk(systolic, diastolic),
+      description:
+        systolic && diastolic
+          ? `Pressão considerada: ${systolic}/${diastolic} mmHg.`
+          : 'Pressão arterial não informada.',
+    },
+    {
+      label: 'Atividade',
+      value: doesExercise === false ? 70 : 0,
+      description:
+        doesExercise === false
+          ? 'Você não pratica atividade física regularmente.'
+          : doesExercise === true
+            ? 'Você pratica atividade física.'
+            : 'Informação de atividade física não preenchida.',
+    },
+    {
+      label: 'Alimentação',
+      value: calculateFoodRisk(consumesFruit, consumesVegetables),
+      description: getFoodDescription(consumesFruit, consumesVegetables),
+    },
+    {
+      label: 'Histórico',
+      value: calculateHistoryRisk(smoker, highCholesterol, strokeHistory, heartDisease),
+      description: getHistoryDescription(smoker, highCholesterol, strokeHistory, heartDisease),
+    },
+  ];
+}
+
+function getRiskLevel(value: number) {
+  if (value >= 70) {
+    return {
+      label: 'Alto',
+      textClass: 'text-[#991B1B]',
+      badgeClass: 'bg-[#FEE2E2]',
+      barClass: 'bg-[#EF4444]',
+    };
+  }
+
+  if (value >= 40) {
+    return {
+      label: 'Médio',
+      textClass: 'text-[#92400E]',
+      badgeClass: 'bg-[#FEF3C7]',
+      barClass: 'bg-[#F59E0B]',
+    };
+  }
+
+  return {
+    label: 'Baixo',
+    textClass: 'text-[#166534]',
+    badgeClass: 'bg-[#DCFCE7]',
+    barClass: 'bg-[#22C55E]',
+  };
+}
+
+function calculateGlucoseRisk(glucose?: number) {
+  if (!glucose) return 0;
+
+  return clamp(((glucose - 100) / 100) * 100);
+}
+
+function calculateBmiRisk(bmi?: number) {
+  if (!bmi) return 0;
+
+  if (bmi >= 18.5 && bmi <= 24.9) {
+    return 0;
+  }
+
+  if (bmi < 18.5) {
+    return clamp(((18.5 - bmi) / 4.5) * 100);
+  }
+
+  return clamp(((bmi - 24.9) / 15.1) * 100);
+}
+
+function calculatePressureRisk(systolic?: number, diastolic?: number) {
+  const systolicRisk = systolic ? ((systolic - 120) / 60) * 100 : 0;
+  const diastolicRisk = diastolic ? ((diastolic - 80) / 40) * 100 : 0;
+
+  return clamp(Math.max(systolicRisk, diastolicRisk));
+}
+
+function calculateFoodRisk(consumesFruit?: boolean, consumesVegetables?: boolean) {
+  let risk = 0;
+
+  if (consumesFruit === false) {
+    risk += 50;
+  }
+
+  if (consumesVegetables === false) {
+    risk += 50;
+  }
+
+  return clamp(risk);
+}
+
+function calculateHistoryRisk(
+  smoker?: boolean,
+  highCholesterol?: boolean,
+  strokeHistory?: boolean,
+  heartDisease?: boolean
+) {
+  let risk = 0;
+
+  if (smoker) risk += 25;
+  if (highCholesterol) risk += 25;
+  if (strokeHistory) risk += 25;
+  if (heartDisease) risk += 25;
+
+  return clamp(risk);
+}
+
+function getFoodDescription(consumesFruit?: boolean, consumesVegetables?: boolean) {
+  if (consumesFruit === undefined && consumesVegetables === undefined) {
+    return 'Informações sobre alimentação não preenchidas.';
+  }
+
+  if (consumesFruit === true && consumesVegetables === true) {
+    return 'Você consome frutas e vegetais.';
+  }
+
+  if (consumesFruit === false && consumesVegetables === false) {
+    return 'Você não consome frutas nem vegetais regularmente.';
+  }
+
+  if (consumesFruit === false) {
+    return 'Você não consome frutas regularmente.';
+  }
+
+  if (consumesVegetables === false) {
+    return 'Você não consome vegetais regularmente.';
+  }
+
+  return 'Alimentação parcialmente preenchida.';
+}
+
+function getHistoryDescription(
+  smoker?: boolean,
+  highCholesterol?: boolean,
+  strokeHistory?: boolean,
+  heartDisease?: boolean
+) {
+  const factors: string[] = [];
+
+  if (smoker) factors.push('fumante');
+  if (highCholesterol) factors.push('colesterol alto');
+  if (strokeHistory) factors.push('histórico de AVC');
+  if (heartDisease) factors.push('doença cardíaca');
+
+  if (factors.length === 0) {
+    return 'Nenhum fator de histórico clínico informado.';
+  }
+
+  return `Fatores considerados: ${factors.join(', ')}.`;
+}
+
+function getBmi(profile: Record<string, unknown>) {
+  const bmi = getNumber(profile, ['imc', 'bmi']);
+
+  if (bmi) {
+    return bmi;
+  }
+
+  const weight = getNumber(profile, ['peso', 'weight']);
+  const height = getNumber(profile, ['altura', 'height']);
+
+  if (!weight || !height) {
+    return undefined;
+  }
+
+  const heightInMeters = height > 3 ? height / 100 : height;
+
+  return weight / (heightInMeters * heightInMeters);
+}
+
+function getNumber(profile: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = profile[key];
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const parsedValue = Number(value.replace(',', '.'));
+
+      if (Number.isFinite(parsedValue)) {
+        return parsedValue;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+function getBoolean(profile: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = profile[key];
+
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const normalizedValue = value.trim().toLowerCase();
+
+      if (['true', 'sim', 'yes', '1'].includes(normalizedValue)) {
+        return true;
+      }
+
+      if (['false', 'nao', 'não', 'no', '0'].includes(normalizedValue)) {
+        return false;
+      }
+    }
+
+    if (typeof value === 'number') {
+      if (value === 1) return true;
+      if (value === 0) return false;
+    }
+  }
+
+  return undefined;
+}
+
+function clamp(value: number) {
+  return Math.round(Math.min(Math.max(value, 0), 100));
 }
