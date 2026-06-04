@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, TouchableOpacity, View } from 'react-native';
 
 import { AuthBackground } from '@/components/auth/auth-background';
 import { AuthBottomSheet } from '@/components/auth/auth-bottom-sheet';
@@ -90,21 +90,25 @@ export default function LoginScreen() {
             <Text className="text-right text-xs text-[#2D8DE8]">Esqueceu sua senha?</Text>
           </Pressable>
 
-          <Pressable
+          <TouchableOpacity
             onPress={handleLogin}
-            className="mt-6 h-12 items-center justify-center rounded-full bg-[#2D8DE8]">
+            disabled={isSubmitting}
+            activeOpacity={0.82}
+            className={`mt-6 h-12 items-center justify-center rounded-full ${isSubmitting ? 'bg-[#93C5FD]' : 'bg-[#2D8DE8]'}`}>
             <Text className="text-lg font-semibold text-white">
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </Text>
-          </Pressable>
+          </TouchableOpacity>
 
           <Pressable onPress={() => router.replace('/auth')} className="mt-6">
             <Text className="text-center text-xs text-[#2D8DE8]">Voltar para início</Text>
           </Pressable>
 
-          <Pressable onPress={() => router.push('/auth/register')} className="mt-3">
-            <Text className="text-center text-sm font-semibold text-[#0F3D8C]">Criar minha conta</Text>
-          </Pressable>
+          <Link href="/auth/register" asChild>
+            <Pressable className="mt-3">
+              <Text className="text-center text-sm font-semibold text-[#0F3D8C]">Criar minha conta</Text>
+            </Pressable>
+          </Link>
         </AuthBottomSheet>
       </View>
     </AuthBackground>

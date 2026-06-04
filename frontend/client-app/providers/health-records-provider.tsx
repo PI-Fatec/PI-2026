@@ -5,13 +5,17 @@ import { recordsApi } from '@/lib/records-api';
 import { useSession } from '@/providers/session-provider';
 import { HealthRecord, HealthRecordType, HealthRecordTypeMeta, UpsertHealthRecordInput } from '@/types/record';
 
-export const HEALTH_RECORD_TYPE_OPTIONS: HealthRecordTypeMeta[] = [
+const HEALTH_RECORD_TYPE_META_OPTIONS: HealthRecordTypeMeta[] = [
   { value: 'glicemia', label: 'Glicemia', unit: 'mg/dL', placeholder: 'Ex: 110' },
   { value: 'pressao_arterial', label: 'Pressão arterial', unit: 'mmHg', placeholder: 'Ex: 120' },
   { value: 'exame', label: 'Exame', unit: 'un', placeholder: 'Ex: 1.2' },
   { value: 'prontuario', label: 'Prontuário', unit: 'un', placeholder: 'Ex: 1' },
   { value: 'predicao_risco', label: 'Predição de risco', unit: '%', placeholder: 'Ex: 72' },
 ];
+
+export const HEALTH_RECORD_TYPE_OPTIONS = HEALTH_RECORD_TYPE_META_OPTIONS.filter(
+  (option) => option.value === 'glicemia' || option.value === 'pressao_arterial'
+);
 
 const ANALYSIS_MAX_POLLS = 15;
 const ANALYSIS_POLL_INTERVAL_MS = 1200;
@@ -129,7 +133,7 @@ export function useHealthRecords() {
 }
 
 export function getRecordTypeMeta(type: HealthRecordType): HealthRecordTypeMeta {
-  return HEALTH_RECORD_TYPE_OPTIONS.find((option) => option.value === type) ?? HEALTH_RECORD_TYPE_OPTIONS[0];
+  return HEALTH_RECORD_TYPE_META_OPTIONS.find((option) => option.value === type) ?? HEALTH_RECORD_TYPE_META_OPTIONS[0];
 }
 
 export type { HealthRecord, HealthRecordType, UpsertHealthRecordInput };

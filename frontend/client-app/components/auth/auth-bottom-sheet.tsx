@@ -39,7 +39,7 @@ export function AuthBottomSheet({
   const panResponder: PanResponderInstance = useMemo(
     () =>
       PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
+        onStartShouldSetPanResponder: () => false,
         onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dy) > 4,
         onPanResponderGrant: () => {
           translateY.stopAnimation((value: number) => {

@@ -42,9 +42,13 @@ const initialForm: NewPatientInput = {
   pressaoDiastolica: 0,
   glicemiaMgDl: 0,
   fumante: false,
+  colesterolAlto: false,
   atividadeFisica: true,
   historicoAvc: false,
-  diabetes: false,
+  doencaCardiaca: false,
+  consomeFrutas: true,
+  consomeVegetais: true,
+  dificuldadeCaminhar: false,
   consumoAlcoolDoses: 0,
   estadoGeralSaude: 'BOM',
   status: 'ATIVO',
@@ -405,6 +409,14 @@ export default function CadastroPacientePage() {
                   />
 
                   <Toggle
+                    id="colesterolAlto"
+                    label="Colesterol alto?"
+                    hint="Colesterol alto diagnosticado"
+                    checked={form.colesterolAlto}
+                    onChange={(value) => setForm((current) => ({ ...current, colesterolAlto: value }))}
+                  />
+
+                  <Toggle
                     id="atividadeFisica"
                     label="Atividade Fisica?"
                     hint="Minimo 150min por semana"
@@ -421,11 +433,35 @@ export default function CadastroPacientePage() {
                   />
 
                   <Toggle
-                    id="diabetes"
-                    label="Diabetes?"
-                    hint="Pre-diabetes ou diabetes confirmada"
-                    checked={form.diabetes}
-                    onChange={(value) => setForm((current) => ({ ...current, diabetes: value }))}
+                    id="doencaCardiaca"
+                    label="Doenca cardiaca?"
+                    hint="Historico de infarto ou doenca cardiaca"
+                    checked={form.doencaCardiaca}
+                    onChange={(value) => setForm((current) => ({ ...current, doencaCardiaca: value }))}
+                  />
+
+                  <Toggle
+                    id="consomeFrutas"
+                    label="Consome frutas?"
+                    hint="Consumo regular de frutas"
+                    checked={form.consomeFrutas}
+                    onChange={(value) => setForm((current) => ({ ...current, consomeFrutas: value }))}
+                  />
+
+                  <Toggle
+                    id="consomeVegetais"
+                    label="Consome vegetais?"
+                    hint="Consumo regular de vegetais"
+                    checked={form.consomeVegetais}
+                    onChange={(value) => setForm((current) => ({ ...current, consomeVegetais: value }))}
+                  />
+
+                  <Toggle
+                    id="dificuldadeCaminhar"
+                    label="Dificuldade para caminhar?"
+                    hint="Mobilidade reduzida ou dificuldade de locomocao"
+                    checked={form.dificuldadeCaminhar}
+                    onChange={(value) => setForm((current) => ({ ...current, dificuldadeCaminhar: value }))}
                   />
                 </div>
 

@@ -1,186 +1,252 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { AppHeader } from '@/components/main/app-header';
-import {
-  HEALTH_RECORD_TYPE_OPTIONS,
-  getRecordTypeMeta,
-  useHealthRecords,
-  type HealthRecordType,
-} from '@/providers/health-records-provider';
+import { usePatientProfile } from '@/providers/patient-profile-provider';
+import { HealthOverallStatus, Sex } from '@/types/patient-profile';
 
-type InfoErrors = {
-  value?: string;
-  date?: string;
-  time?: string;
+const sexOptions: Sex[] = ['Feminino', 'Masculino', 'Outro'];
+const healthStatusOptions: HealthOverallStatus[] = ['MUITO_BOM', 'BOM', 'ATENCAO', 'CRITICO'];
+
+const healthStatusLabel: Record<HealthOverallStatus, string> = {
+  MUITO_BOM: 'Muito bom',
+  BOM: 'Bom',
+  ATENCAO: 'Atenção',
+  CRITICO: 'Crítico',
+};
+
+type ClinicalForm = {
+  telefone: string;
+  dataNascimento: string;
+  sexo: Sex;
+  alturaCm: string;
+  pesoKg: string;
+  pressaoSistolica: string;
+  pressaoDiastolica: string;
+  glicemiaMgDl: string;
+  fumante: boolean;
+  colesterolAlto: boolean;
+  atividadeFisica: boolean;
+  historicoAvc: boolean;
+  doencaCardiaca: boolean;
+  consomeFrutas: boolean;
+  consomeVegetais: boolean;
+  dificuldadeCaminhar: boolean;
+  consumoAlcoolDoses: string;
+  estadoGeralSaude: HealthOverallStatus;
 };
 
 export default function AddInfoScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ id?: string; type?: string }>();
-  const { addRecord, getRecordById, updateRecord } = useHealthRecords();
-
-  const editId = normalizeParam(params.id);
-  const editRecord = useMemo(() => (editId ? getRecordById(editId) : undefined), [editId, getRecordById]);
-
-  const initialType = normalizeType(params.type) ?? editRecord?.type ?? 'glicemia';
-
-  const [selectedType, setSelectedType] = useState<HealthRecordType>(initialType);
-  const [value, setValue] = useState(editRecord?.value ? String(editRecord.value) : '');
-  const [date, setDate] = useState(formatDateInput(editRecord?.recordedAt));
-  const [time, setTime] = useState(formatTimeInput(editRecord?.recordedAt));
-  const [notes, setNotes] = useState(editRecord?.notes ?? '');
-  const [errors, setErrors] = useState<InfoErrors>({});
-  const [isSaving, setIsSaving] = useState(false);
+  const { account, isLoading, isSaving, updateProfile } = usePatientProfile();
+  const profile = account?.patientProfile;
+  const [form, setForm] = useState<ClinicalForm>(() => buildForm());
 
   useEffect(() => {
-    if (!editRecord) {
-      return;
-    }
+    if (!profile) return;
+    setForm(buildForm(profile));
+  }, [profile]);
 
-    setSelectedType(editRecord.type);
-    setValue(String(editRecord.value));
-    setDate(formatDateInput(editRecord.recordedAt));
-    setTime(formatTimeInput(editRecord.recordedAt));
-    setNotes(editRecord.notes);
-  }, [editRecord]);
+  const imc = useMemo(() => {
+    const alturaCm = parseNumber(form.alturaCm);
+    const pesoKg = parseNumber(form.pesoKg);
 
-  const selectedTypeMeta = getRecordTypeMeta(selectedType);
+    if (!alturaCm || !pesoKg) return 0;
+
+    return Number((pesoKg / Math.pow(alturaCm / 100, 2)).toFixed(1));
+  }, [form.alturaCm, form.pesoKg]);
+
+  const updateField = <K extends keyof ClinicalForm>(field: K, value: ClinicalForm[K]) => {
+    setForm((current) => ({ ...current, [field]: value }));
+  };
 
   const handleSave = async () => {
-    const parsedValue = Number(value.replace(',', '.'));
-    const recordedAt = buildIsoDate(date, time);
-    const nextErrors: InfoErrors = {
-      value: Number.isFinite(parsedValue) && parsedValue > 0 ? undefined : 'Informe um valor numérico maior que zero.',
-      date: isValidDateInput(date) ? undefined : 'Use uma data no formato AAAA-MM-DD.',
-      time: isValidTimeInput(time) ? undefined : 'Use uma hora no formato HH:mm.',
-    };
+    const alturaCm = parseNumber(form.alturaCm);
+    const pesoKg = parseNumber(form.pesoKg);
+    const pressaoSistolica = parseNumber(form.pressaoSistolica);
+    const pressaoDiastolica = parseNumber(form.pressaoDiastolica);
+    const glicemiaMgDl = parseNumber(form.glicemiaMgDl);
+    const consumoAlcoolDoses = parseNumber(form.consumoAlcoolDoses);
 
-    setErrors(nextErrors);
-
-    if (nextErrors.value || nextErrors.date || nextErrors.time || !recordedAt) {
-      Alert.alert('Revise o registro', 'Alguns campos precisam de ajuste antes de salvar.');
+    if (!alturaCm || !pesoKg || !pressaoSistolica || !pressaoDiastolica || !glicemiaMgDl) {
+      Alert.alert('Revise os dados', 'Preencha altura, peso, pressão e glicemia com números válidos.');
       return;
     }
 
-    const payload = {
-      type: selectedType,
-      value: parsedValue,
-      unit: selectedTypeMeta.unit,
-      notes,
-      recordedAt,
-    };
-
     try {
-      setIsSaving(true);
-      if (editId) {
-        await updateRecord(editId, payload);
-      } else {
-        await addRecord(payload);
-      }
+      await updateProfile({
+        telefone: form.telefone.trim(),
+        dataNascimento: form.dataNascimento || null,
+        sexo: form.sexo,
+        alturaCm,
+        pesoKg,
+        imc,
+        pressaoSistolica,
+        pressaoDiastolica,
+        glicemiaMgDl,
+        fumante: form.fumante,
+        colesterolAlto: form.colesterolAlto,
+        atividadeFisica: form.atividadeFisica,
+        historicoAvc: form.historicoAvc,
+        doencaCardiaca: form.doencaCardiaca,
+        consomeFrutas: form.consomeFrutas,
+        consomeVegetais: form.consomeVegetais,
+        dificuldadeCaminhar: form.dificuldadeCaminhar,
+        consumoAlcoolDoses: consumoAlcoolDoses ?? 0,
+        estadoGeralSaude: form.estadoGeralSaude,
+      });
 
+      Alert.alert('Dados atualizados', 'Seu perfil clínico foi salvo e já pode alimentar a análise da IA.');
       router.replace('/main/dashboard');
     } catch (error) {
-      Alert.alert('Falha ao salvar', error instanceof Error ? error.message : 'Não foi possível salvar o registro.');
-    } finally {
-      setIsSaving(false);
+      Alert.alert('Falha ao salvar', error instanceof Error ? error.message : 'Não foi possível salvar seus dados.');
     }
   };
+
+  if (isLoading && !profile) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[#F3F4F6]">
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 bg-[#F3F4F6]" contentContainerClassName="px-5 pb-8 pt-14">
       <AppHeader
-        title="Adicionar informação"
+        title="Dados de saúde"
         showBackButton
         onPressBack={() => router.back()}
         showAction={false}
         onPressNotifications={() => Alert.alert('Notificações', 'Sem novos avisos.')}
       />
 
-      <View className="mt-8 rounded-3xl bg-white p-4">
-        <Text className="text-sm font-semibold uppercase tracking-[2px] text-[#64748B]">Tipo de registro</Text>
-        <View className="mt-3 flex-row flex-wrap gap-2">
-          {HEALTH_RECORD_TYPE_OPTIONS.map((option) => {
-            const active = option.value === selectedType;
-
-            return (
-              <Pressable
-                key={option.value}
-                onPress={() => setSelectedType(option.value)}
-                className={`rounded-xl border px-3 py-2 ${
-                  active ? 'border-[#2563EB] bg-[#DBEAFE]' : 'border-[#E5E7EB] bg-[#F8FAFC]'
-                }`}>
-                <Text className={`font-semibold ${active ? 'text-[#1D4ED8]' : 'text-[#334155]'}`}>
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+      <View className="mt-5 rounded-3xl border border-[#DBE4F1] bg-white p-5">
+        <Text className="text-lg font-semibold text-[#111827]">Informações pessoais</Text>
+        <TextInputField
+          label="Telefone"
+          value={form.telefone}
+          onChangeText={(value) => updateField('telefone', value)}
+          keyboardType="phone-pad"
+          placeholder="(00) 00000-0000"
+        />
+        <TextInputField
+          label="Data de nascimento"
+          value={form.dataNascimento}
+          onChangeText={(value) => updateField('dataNascimento', value)}
+          placeholder="AAAA-MM-DD"
+        />
+        <OptionGroup
+          label="Sexo"
+          options={sexOptions}
+          value={form.sexo}
+          getLabel={(value) => value}
+          onChange={(value) => updateField('sexo', value)}
+        />
       </View>
 
-      <View className="mt-5 rounded-3xl border border-[#E2E8F0] bg-white p-5">
-        <Text className="text-center text-xs font-semibold uppercase tracking-[2px] text-[#6B7280]">
-          Valor medido
-        </Text>
-        <View className="mt-4 flex-row items-end justify-center gap-2">
-          <TextInput
-            value={value}
-            onChangeText={(nextValue) => {
-              setValue(nextValue);
-              setErrors((current) => ({ ...current, value: undefined }));
-            }}
+      <View className="mt-4 rounded-3xl border border-[#DBE4F1] bg-white p-5">
+        <Text className="text-lg font-semibold text-[#111827]">Biometria e medições</Text>
+        <View className="mt-3 flex-row gap-3">
+          <TextInputField
+            label="Altura"
+            value={form.alturaCm}
+            onChangeText={(value) => updateField('alturaCm', value)}
             keyboardType="decimal-pad"
-            placeholder={selectedTypeMeta.placeholder}
-            placeholderTextColor="#94A3B8"
-            editable={!isSaving}
-            className={`w-40 border-b text-center text-5xl font-extrabold ${
-              errors.value ? 'border-[#DC2626] text-[#DC2626]' : 'border-[#38BDF8] text-[#0F3D8C]'
-            }`}
+            suffix="cm"
           />
-          <Text className="mb-2 text-2xl font-semibold text-[#6B7280]">{selectedTypeMeta.unit}</Text>
+          <TextInputField
+            label="Peso"
+            value={form.pesoKg}
+            onChangeText={(value) => updateField('pesoKg', value)}
+            keyboardType="decimal-pad"
+            suffix="kg"
+          />
         </View>
-        {errors.value ? <Text className="mt-3 text-center text-xs font-semibold text-[#DC2626]">{errors.value}</Text> : null}
+
+        <View className="mt-3 rounded-2xl bg-[#EEF2FF] p-4">
+          <Text className="text-xs font-semibold uppercase tracking-[1px] text-[#64748B]">IMC calculado</Text>
+          <Text className="mt-1 text-3xl font-bold text-[#1D4ED8]">{imc || '--'}</Text>
+        </View>
+
+        <View className="mt-3 flex-row gap-3">
+          <TextInputField
+            label="Pressão sistólica"
+            value={form.pressaoSistolica}
+            onChangeText={(value) => updateField('pressaoSistolica', value)}
+            keyboardType="number-pad"
+            suffix="mmHg"
+          />
+          <TextInputField
+            label="Pressão diastólica"
+            value={form.pressaoDiastolica}
+            onChangeText={(value) => updateField('pressaoDiastolica', value)}
+            keyboardType="number-pad"
+            suffix="mmHg"
+          />
+        </View>
+
+        <TextInputField
+          label="Glicemia"
+          value={form.glicemiaMgDl}
+          onChangeText={(value) => updateField('glicemiaMgDl', value)}
+          keyboardType="decimal-pad"
+          suffix="mg/dL"
+        />
       </View>
 
-      <View className="mt-5 flex-row gap-3">
-        <InfoInput
-          label="Data"
-          value={date}
-          onChangeText={(nextValue) => {
-            setDate(nextValue);
-            setErrors((current) => ({ ...current, date: undefined }));
-          }}
-          placeholder="YYYY-MM-DD"
-          icon="calendar-outline"
-          error={errors.date}
+      <View className="mt-4 rounded-3xl border border-[#DBE4F1] bg-white p-5">
+        <Text className="text-lg font-semibold text-[#111827]">Preditores da IA</Text>
+        <ToggleRow label="Fumante" value={form.fumante} onChange={(value) => updateField('fumante', value)} />
+        <ToggleRow
+          label="Colesterol alto"
+          value={form.colesterolAlto}
+          onChange={(value) => updateField('colesterolAlto', value)}
         />
-        <InfoInput
-          label="Hora"
-          value={time}
-          onChangeText={(nextValue) => {
-            setTime(nextValue);
-            setErrors((current) => ({ ...current, time: undefined }));
-          }}
-          placeholder="HH:mm"
-          icon="time-outline"
-          error={errors.time}
+        <ToggleRow
+          label="Atividade física regular"
+          value={form.atividadeFisica}
+          onChange={(value) => updateField('atividadeFisica', value)}
         />
-      </View>
-
-      <View className="mt-4 rounded-2xl border border-[#E2E8F0] bg-white p-4">
-        <Text className="text-xs font-semibold uppercase tracking-[2px] text-[#64748B]">Notas e observações</Text>
-        <TextInput
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-          numberOfLines={4}
-          editable={!isSaving}
-          placeholder="Ex: sintomas, origem do exame, orientação médica ou contexto da medição."
-          placeholderTextColor="#94A3B8"
-          className="mt-3 min-h-24 rounded-xl border border-[#CBD5E1] px-3 py-3 text-base text-[#1E293B]"
+        <ToggleRow
+          label="Histórico de AVC"
+          value={form.historicoAvc}
+          onChange={(value) => updateField('historicoAvc', value)}
+        />
+        <ToggleRow
+          label="Doença cardíaca"
+          value={form.doencaCardiaca}
+          onChange={(value) => updateField('doencaCardiaca', value)}
+        />
+        <ToggleRow
+          label="Consome frutas"
+          value={form.consomeFrutas}
+          onChange={(value) => updateField('consomeFrutas', value)}
+        />
+        <ToggleRow
+          label="Consome vegetais"
+          value={form.consomeVegetais}
+          onChange={(value) => updateField('consomeVegetais', value)}
+        />
+        <ToggleRow
+          label="Dificuldade para caminhar"
+          value={form.dificuldadeCaminhar}
+          onChange={(value) => updateField('dificuldadeCaminhar', value)}
+        />
+        <TextInputField
+          label="Consumo de álcool"
+          value={form.consumoAlcoolDoses}
+          onChangeText={(value) => updateField('consumoAlcoolDoses', value)}
+          keyboardType="number-pad"
+          suffix="doses/semana"
+        />
+        <OptionGroup
+          label="Estado geral de saúde"
+          options={healthStatusOptions}
+          value={form.estadoGeralSaude}
+          getLabel={(value) => healthStatusLabel[value]}
+          onChange={(value) => updateField('estadoGeralSaude', value)}
         />
       </View>
 
@@ -188,100 +254,146 @@ export default function AddInfoScreen() {
         onPress={handleSave}
         disabled={isSaving}
         className={`mt-7 h-14 items-center justify-center rounded-full ${isSaving ? 'bg-[#93A4BD]' : 'bg-[#0F3D8C]'}`}>
-        <Text className="text-xl font-semibold text-white">
-          {isSaving ? 'Salvando...' : editRecord ? 'Salvar alterações' : 'Salvar registro'}
-        </Text>
+        <Text className="text-xl font-semibold text-white">{isSaving ? 'Salvando...' : 'Salvar dados'}</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
-function InfoInput({
+function TextInputField({
   label,
   value,
   onChangeText,
   placeholder,
-  icon,
-  error,
+  keyboardType,
+  suffix,
 }: {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
-  placeholder: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  error?: string;
+  placeholder?: string;
+  keyboardType?: 'default' | 'decimal-pad' | 'number-pad' | 'phone-pad';
+  suffix?: string;
 }) {
   return (
-    <View className={`flex-1 rounded-2xl border bg-white p-3 ${error ? 'border-[#DC2626]' : 'border-transparent'}`}>
-      <Text className="text-xs font-semibold uppercase tracking-[2px] text-[#64748B]">{label}</Text>
+    <View className="mt-3 flex-1 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-3">
+      <Text className="text-xs font-semibold uppercase tracking-[1px] text-[#64748B]">{label}</Text>
       <View className="mt-2 flex-row items-center gap-2">
-        <Ionicons name={icon} size={18} color={error ? '#DC2626' : '#0EA5E9'} />
         <TextInput
           value={value}
           onChangeText={onChangeText}
+          keyboardType={keyboardType}
           placeholder={placeholder}
           placeholderTextColor="#94A3B8"
-          className="flex-1 text-lg font-semibold text-[#0F3D8C]"
+          className="min-w-0 flex-1 text-lg font-semibold text-[#0F172A]"
         />
+        {suffix ? <Text className="text-sm font-semibold text-[#64748B]">{suffix}</Text> : null}
       </View>
-      {error ? <Text className="mt-2 text-xs font-semibold text-[#DC2626]">{error}</Text> : null}
     </View>
   );
 }
 
-function formatDateInput(dateIso?: string) {
-  const date = dateIso ? new Date(dateIso) : new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-    date.getDate()
-  ).padStart(2, '0')}`;
+function ToggleRow({ label, value, onChange }: { label: string; value: boolean; onChange: (value: boolean) => void }) {
+  return (
+    <View className="mt-3 flex-row items-center justify-between rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
+      <Text className="flex-1 text-base font-semibold text-[#334155]">{label}</Text>
+      <View className="flex-row rounded-full bg-[#E5E7EB] p-1">
+        <Pressable
+          onPress={() => onChange(true)}
+          className={`rounded-full px-3 py-1.5 ${value ? 'bg-[#2563EB]' : 'bg-transparent'}`}>
+          <Text className={`font-semibold ${value ? 'text-white' : 'text-[#475569]'}`}>Sim</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => onChange(false)}
+          className={`rounded-full px-3 py-1.5 ${!value ? 'bg-[#2563EB]' : 'bg-transparent'}`}>
+          <Text className={`font-semibold ${!value ? 'text-white' : 'text-[#475569]'}`}>Não</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 }
 
-function formatTimeInput(dateIso?: string) {
-  const date = dateIso ? new Date(dateIso) : new Date();
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+function OptionGroup<T extends string>({
+  label,
+  options,
+  value,
+  getLabel,
+  onChange,
+}: {
+  label: string;
+  options: T[];
+  value: T;
+  getLabel: (value: T) => string;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <View className="mt-3">
+      <Text className="text-xs font-semibold uppercase tracking-[1px] text-[#64748B]">{label}</Text>
+      <View className="mt-2 flex-row flex-wrap gap-2">
+        {options.map((option) => {
+          const active = option === value;
+
+          return (
+            <Pressable
+              key={option}
+              onPress={() => onChange(option)}
+              className={`rounded-full border px-3 py-2 ${
+                active ? 'border-[#2563EB] bg-[#DBEAFE]' : 'border-[#E2E8F0] bg-[#F8FAFC]'
+              }`}>
+              <Text className={`font-semibold ${active ? 'text-[#1D4ED8]' : 'text-[#334155]'}`}>
+                {getLabel(option)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
 }
 
-function buildIsoDate(date: string, time: string) {
-  if (!isValidDateInput(date) || !isValidTimeInput(time)) {
-    return null;
-  }
-
-  const parsed = new Date(`${date}T${time}:00`);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-
-  return parsed.toISOString();
+function buildForm(profile?: {
+  telefone: string;
+  dataNascimento: string | null;
+  sexo: Sex;
+  alturaCm: number;
+  pesoKg: number;
+  pressaoSistolica: number;
+  pressaoDiastolica: number;
+  glicemiaMgDl: number;
+  fumante: boolean;
+  colesterolAlto: boolean;
+  atividadeFisica: boolean;
+  historicoAvc: boolean;
+  doencaCardiaca: boolean;
+  consomeFrutas: boolean;
+  consomeVegetais: boolean;
+  dificuldadeCaminhar: boolean;
+  consumoAlcoolDoses: number;
+  estadoGeralSaude: HealthOverallStatus;
+}): ClinicalForm {
+  return {
+    telefone: profile?.telefone ?? '',
+    dataNascimento: profile?.dataNascimento ? String(profile.dataNascimento).slice(0, 10) : '',
+    sexo: profile?.sexo ?? 'Outro',
+    alturaCm: profile ? String(profile.alturaCm) : '',
+    pesoKg: profile ? String(profile.pesoKg) : '',
+    pressaoSistolica: profile ? String(profile.pressaoSistolica) : '',
+    pressaoDiastolica: profile ? String(profile.pressaoDiastolica) : '',
+    glicemiaMgDl: profile ? String(profile.glicemiaMgDl) : '',
+    fumante: profile?.fumante ?? false,
+    colesterolAlto: profile?.colesterolAlto ?? false,
+    atividadeFisica: profile?.atividadeFisica ?? true,
+    historicoAvc: profile?.historicoAvc ?? false,
+    doencaCardiaca: profile?.doencaCardiaca ?? false,
+    consomeFrutas: profile?.consomeFrutas ?? true,
+    consomeVegetais: profile?.consomeVegetais ?? true,
+    dificuldadeCaminhar: profile?.dificuldadeCaminhar ?? false,
+    consumoAlcoolDoses: profile ? String(profile.consumoAlcoolDoses) : '0',
+    estadoGeralSaude: profile?.estadoGeralSaude ?? 'BOM',
+  };
 }
 
-function isValidDateInput(value: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
-  }
-
-  const parsed = new Date(`${value}T00:00:00`);
-  return !Number.isNaN(parsed.getTime());
-}
-
-function isValidTimeInput(value: string) {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
-}
-
-function normalizeParam(value?: string | string[]) {
-  if (!value) {
-    return undefined;
-  }
-
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function normalizeType(value?: string): HealthRecordType | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  const normalized = value as HealthRecordType;
-  const exists = HEALTH_RECORD_TYPE_OPTIONS.some((option) => option.value === normalized);
-  return exists ? normalized : undefined;
+function parseNumber(value: string) {
+  const parsed = Number(value.replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : null;
 }

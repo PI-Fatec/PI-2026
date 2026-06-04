@@ -53,13 +53,8 @@ export const useSidebarState = (options: SidebarStateOptions = {}) => {
     applyState();
     setHasLoaded(true);
 
-    if ('addEventListener' in media) {
-      media.addEventListener('change', applyState);
-      return () => media.removeEventListener('change', applyState);
-    }
-
-    media.addListener(applyState);
-    return () => media.removeListener(applyState);
+    media.addEventListener('change', applyState);
+    return () => media.removeEventListener('change', applyState);
   }, [defaultOpen]);
 
   useEffect(() => {

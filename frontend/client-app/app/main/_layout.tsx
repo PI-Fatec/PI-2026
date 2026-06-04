@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { BottomMenu } from '@/components/main/bottom-menu';
 import { HealthRecordsProvider } from '@/providers/health-records-provider';
+import { PatientProfileProvider } from '@/providers/patient-profile-provider';
 import { useSession } from '@/providers/session-provider';
 
 export default function MainLayout() {
@@ -25,43 +26,45 @@ export default function MainLayout() {
   }
 
   return (
-    <HealthRecordsProvider>
-      <Tabs
-        tabBar={(props) => <BottomMenu {...props} />}
-        screenOptions={{
-          headerShown: false,
-        }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Home',
-          }}
-        />
-        <Tabs.Screen
-          name="dashboard"
-          options={{
-            title: 'Dashboard',
-          }}
-        />
-        <Tabs.Screen
-          name="history"
-          options={{
-            title: 'Historico',
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: 'Perfil',
-          }}
-        />
-        <Tabs.Screen
-          name="add-info"
-          options={{
-            href: null,
-          }}
-        />
-      </Tabs>
-    </HealthRecordsProvider>
+    <PatientProfileProvider>
+      <HealthRecordsProvider>
+        <Tabs
+          tabBar={(props) => <BottomMenu {...props} />}
+          screenOptions={{
+            headerShown: false,
+          }}>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Home',
+            }}
+          />
+          <Tabs.Screen
+            name="dashboard"
+            options={{
+              title: 'Dashboard',
+            }}
+          />
+          <Tabs.Screen
+            name="history"
+            options={{
+              title: 'Historico',
+            }}
+          />
+          <Tabs.Screen
+            name="profile"
+            options={{
+              title: 'Perfil',
+            }}
+          />
+          <Tabs.Screen
+            name="add-info"
+            options={{
+              href: null,
+            }}
+          />
+        </Tabs>
+      </HealthRecordsProvider>
+    </PatientProfileProvider>
   );
 }

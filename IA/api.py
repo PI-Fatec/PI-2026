@@ -8,11 +8,14 @@ from pathlib import Path
 import pika
 import requests
 from fastapi import FastAPI
+from dotenv import load_dotenv
 
 from predict import identificar_perfil_paciente, load_models, prever_risco_diabetes
 
 BASE_DIR = Path(__file__).resolve().parent
 MODELS_DIR = BASE_DIR / 'models'
+
+load_dotenv(BASE_DIR / '.env')
 
 RABBITMQ_URL = os.getenv('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')
 QUEUE_NAME = os.getenv('RABBITMQ_HEALTH_QUEUE', 'health_data_queue')
@@ -91,6 +94,7 @@ def handle_message(channel, method, _properties, body):
 
 	try:
 		features = normalize_features(payload.get('features') or {})
+		print(f'Processando solicitacao de IA {request_id}')
 		risco = prever_risco_diabetes(features, models['classificacao'], models['scaler_classificacao'])
 		perfil = identificar_perfil_paciente(
 			features, models['clustering'], models['scaler_clustering'], models['cluster_labels']
@@ -109,16 +113,20 @@ def handle_message(channel, method, _properties, body):
 			'result': result,
 		})
 
+		print(f'Solicitacao de IA {request_id} concluida e enviada ao backend')
 		channel.basic_ack(delivery_tag=method.delivery_tag)
 	except Exception as exc:
+		print(f'Erro ao processar solicitacao de IA {request_id}: {exc}')
 		try:
 			post_webhook({
 				'requestId': request_id,
 				'status': 'FAILED',
 				'error': str(exc),
 			})
+			print(f'Falha da solicitacao de IA {request_id} enviada ao backend')
 			channel.basic_ack(delivery_tag=method.delivery_tag)
-		except Exception:
+		except Exception as webhook_exc:
+			print(f'Webhook falhou para solicitacao de IA {request_id}: {webhook_exc}')
 			channel.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
 

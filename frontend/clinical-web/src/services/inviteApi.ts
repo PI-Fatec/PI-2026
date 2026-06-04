@@ -11,6 +11,8 @@ export interface InviteValidationResponse {
   role: 'DOCTOR' | 'PATIENT';
   email: string;
   cpf?: string | null;
+  dataNascimento?: string | null;
+  sexo?: 'Masculino' | 'Feminino' | 'Outro' | null;
   expiresAt: string;
 }
 

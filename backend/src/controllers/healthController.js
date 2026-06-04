@@ -73,16 +73,16 @@ function buildFeaturesFromProfile(profile) {
 
   const featureInput = {
     HighBP: highBP,
-    HighChol: 0,
+    HighChol: profile.colesterolAlto ? 1 : 0,
     BMI: bmi,
     Smoker: profile.fumante ? 1 : 0,
     Stroke: profile.historicoAvc ? 1 : 0,
-    HeartDiseaseorAttack: 0,
+    HeartDiseaseorAttack: profile.doencaCardiaca ? 1 : 0,
     PhysActivity: profile.atividadeFisica ? 1 : 0,
-    Fruits: 0,
-    Veggies: 0,
+    Fruits: profile.consomeFrutas ? 1 : 0,
+    Veggies: profile.consomeVegetais ? 1 : 0,
     HvyAlcoholConsump: toNumber(profile.consumoAlcoolDoses, 0) >= 7 ? 1 : 0,
-    DiffWalk: 0,
+    DiffWalk: profile.dificuldadeCaminhar ? 1 : 0,
     Sex: mapSexValue(profile.sexo),
     Age: ageBucket ?? 9,
   };

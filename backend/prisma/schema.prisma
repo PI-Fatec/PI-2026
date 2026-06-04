@@ -64,120 +64,125 @@ enum HealthRecordType {
 }
 
 model User {
-  id              String         @id @default(uuid())
-  name            String
-  email           String         @unique
-  password        String
-  role            Role
-  accountStatus   AccountStatus  @default(PENDING)
-  isActive        Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id            String        @id @default(uuid())
+  name          String
+  email         String        @unique
+  password      String
+  role          Role
+  accountStatus AccountStatus @default(PENDING)
+  isActive      Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  doctorProfile   DoctorProfile?
-  patientProfile  PatientProfile?
-  sentInvites     InviteToken[]  @relation("InviteSender")
-  receivedInvites InviteToken[]  @relation("InviteReceiver")
-  healthRecords   HealthRecord[] @relation("PatientRecords")
+  doctorProfile             DoctorProfile?
+  patientProfile            PatientProfile?
+  sentInvites               InviteToken[]           @relation("InviteSender")
+  receivedInvites           InviteToken[]           @relation("InviteReceiver")
+  healthRecords             HealthRecord[]          @relation("PatientRecords")
   analysisRequestsRequested HealthAnalysisRequest[] @relation("AnalysisRequester")
   analysisRequestsPatient   HealthAnalysisRequest[] @relation("AnalysisPatient")
 }
 
 model DoctorProfile {
-  id              String          @id @default(uuid())
-  userId          String          @unique
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  telefone        String          @default("")
-  crm             String          @unique
-  especialidade   String          @default("")
-  clinica         String          @default("")
-  status          DoctorStatus    @default(ATIVO)
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  telefone        String           @default("")
+  crm             String           @unique
+  especialidade   String           @default("")
+  clinica         String           @default("")
+  status          DoctorStatus     @default(ATIVO)
   invitedPatients PatientProfile[] @relation("DoctorPatients")
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model PatientProfile {
-  id                 String              @id @default(uuid())
-  userId             String              @unique
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cpf                String              @unique
-  dataNascimento     DateTime?
-  sexo               Sex                 @default(Outro)
-  telefone           String              @default("")
-  alturaCm           Float               @default(170)
-  pesoKg             Float               @default(70)
-  imc                Float               @default(24.2)
-  pressaoSistolica   Int                 @default(120)
-  pressaoDiastolica  Int                 @default(80)
-  glicemiaMgDl       Float               @default(96)
-  fumante            Boolean             @default(false)
-  atividadeFisica    Boolean             @default(true)
-  historicoAvc       Boolean             @default(false)
-  diabetes           Boolean             @default(false)
-  consumoAlcoolDoses Int                 @default(0)
-  estadoGeralSaude   HealthOverallStatus @default(BOM)
-  risco              RiskLevel           @default(BAIXO)
-  probabilidadeRisco Float               @default(0.1)
-  status             PatientStatus       @default(ATIVO)
-  doctorId           String?
-  doctor             DoctorProfile?      @relation("DoctorPatients", fields: [doctorId], references: [id], onDelete: SetNull)
-  records            HealthRecord[]      @relation("ProfileRecords")
-  analysisRequests   HealthAnalysisRequest[] @relation("AnalysisProfile")
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  id                  String                  @id @default(uuid())
+  userId              String                  @unique
+  user                User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cpf                 String                  @unique
+  dataNascimento      DateTime?
+  sexo                Sex                     @default(Outro)
+  telefone            String                  @default("")
+  alturaCm            Float                   @default(170)
+  pesoKg              Float                   @default(70)
+  imc                 Float                   @default(24.2)
+  pressaoSistolica    Int                     @default(120)
+  pressaoDiastolica   Int                     @default(80)
+  glicemiaMgDl        Float                   @default(96)
+  fumante             Boolean                 @default(false)
+  colesterolAlto      Boolean                 @default(false)
+  atividadeFisica     Boolean                 @default(true)
+  historicoAvc        Boolean                 @default(false)
+  doencaCardiaca      Boolean                 @default(false)
+  consomeFrutas       Boolean                 @default(true)
+  consomeVegetais     Boolean                 @default(true)
+  dificuldadeCaminhar Boolean                 @default(false)
+  diabetes            Boolean                 @default(false)
+  consumoAlcoolDoses  Int                     @default(0)
+  estadoGeralSaude    HealthOverallStatus     @default(BOM)
+  risco               RiskLevel               @default(BAIXO)
+  probabilidadeRisco  Float                   @default(0.1)
+  status              PatientStatus           @default(ATIVO)
+  doctorId            String?
+  doctor              DoctorProfile?          @relation("DoctorPatients", fields: [doctorId], references: [id], onDelete: SetNull)
+  records             HealthRecord[]          @relation("ProfileRecords")
+  analysisRequests    HealthAnalysisRequest[] @relation("AnalysisProfile")
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
 }
 
 model InviteToken {
-  id           String   @id @default(uuid())
-  tokenHash    String   @unique
-  email        String
-  role         Role
-  invitedById  String
-  invitedBy    User     @relation("InviteSender", fields: [invitedById], references: [id], onDelete: Restrict)
+  id            String    @id @default(uuid())
+  tokenHash     String    @unique
+  email         String
+  role          Role
+  invitedById   String
+  invitedBy     User      @relation("InviteSender", fields: [invitedById], references: [id], onDelete: Restrict)
   invitedUserId String?
-  invitedUser  User?    @relation("InviteReceiver", fields: [invitedUserId], references: [id], onDelete: SetNull)
-  expiresAt    DateTime
-  usedAt       DateTime?
-  metadata     Json?
-  createdAt    DateTime @default(now())
+  invitedUser   User?     @relation("InviteReceiver", fields: [invitedUserId], references: [id], onDelete: SetNull)
+  expiresAt     DateTime
+  usedAt        DateTime?
+  metadata      Json?
+  createdAt     DateTime  @default(now())
 
   @@index([email])
 }
 
 model HealthRecord {
-  id               String            @id @default(uuid())
+  id               String           @id @default(uuid())
   patientUserId    String
-  patient          User              @relation("PatientRecords", fields: [patientUserId], references: [id], onDelete: Cascade)
+  patient          User             @relation("PatientRecords", fields: [patientUserId], references: [id], onDelete: Cascade)
   patientProfileId String?
-  patientProfile   PatientProfile?   @relation("ProfileRecords", fields: [patientProfileId], references: [id], onDelete: SetNull)
+  patientProfile   PatientProfile?  @relation("ProfileRecords", fields: [patientProfileId], references: [id], onDelete: SetNull)
   type             HealthRecordType
   value            Float
   unit             String
-  notes            String            @default("")
+  notes            String           @default("")
   recordedAt       DateTime
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   @@index([patientUserId, recordedAt])
 }
 
 model HealthAnalysisRequest {
-  id               String               @id @default(uuid())
-  patientUserId    String?
-  patientProfileId String?
+  id                String               @id @default(uuid())
+  patientUserId     String?
+  patientProfileId  String?
   requestedByUserId String?
-  status           HealthAnalysisStatus @default(PENDING)
-  payload          Json
-  result           Json?
-  error            String?
-  completedAt      DateTime?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  status            HealthAnalysisStatus @default(PENDING)
+  payload           Json
+  result            Json?
+  error             String?
+  completedAt       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
-  patient          User?           @relation("AnalysisPatient", fields: [patientUserId], references: [id], onDelete: SetNull)
-  patientProfile   PatientProfile? @relation("AnalysisProfile", fields: [patientProfileId], references: [id], onDelete: SetNull)
-  requestedBy      User?           @relation("AnalysisRequester", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  patient        User?           @relation("AnalysisPatient", fields: [patientUserId], references: [id], onDelete: SetNull)
+  patientProfile PatientProfile? @relation("AnalysisProfile", fields: [patientProfileId], references: [id], onDelete: SetNull)
+  requestedBy    User?           @relation("AnalysisRequester", fields: [requestedByUserId], references: [id], onDelete: SetNull)
 
   @@index([patientUserId, status])
 }

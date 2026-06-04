@@ -17,8 +17,13 @@ function mapPatient(item) {
     pressaoDiastolica: item.pressaoDiastolica,
     glicemiaMgDl: item.glicemiaMgDl,
     fumante: item.fumante,
+    colesterolAlto: item.colesterolAlto,
     atividadeFisica: item.atividadeFisica,
     historicoAvc: item.historicoAvc,
+    doencaCardiaca: item.doencaCardiaca,
+    consomeFrutas: item.consomeFrutas,
+    consomeVegetais: item.consomeVegetais,
+    dificuldadeCaminhar: item.dificuldadeCaminhar,
     diabetes: item.diabetes,
     consumoAlcoolDoses: item.consumoAlcoolDoses,
     estadoGeralSaude: item.estadoGeralSaude,
@@ -62,8 +67,13 @@ function buildPatientUpdate(body) {
   if (hasOwn(body, 'pressaoDiastolica')) payload.pressaoDiastolica = toInt(body.pressaoDiastolica, 80);
   if (hasOwn(body, 'glicemiaMgDl')) payload.glicemiaMgDl = toNumber(body.glicemiaMgDl, 96);
   if (hasOwn(body, 'fumante')) payload.fumante = toBoolean(body.fumante, false);
+  if (hasOwn(body, 'colesterolAlto')) payload.colesterolAlto = toBoolean(body.colesterolAlto, false);
   if (hasOwn(body, 'atividadeFisica')) payload.atividadeFisica = toBoolean(body.atividadeFisica, true);
   if (hasOwn(body, 'historicoAvc')) payload.historicoAvc = toBoolean(body.historicoAvc, false);
+  if (hasOwn(body, 'doencaCardiaca')) payload.doencaCardiaca = toBoolean(body.doencaCardiaca, false);
+  if (hasOwn(body, 'consomeFrutas')) payload.consomeFrutas = toBoolean(body.consomeFrutas, true);
+  if (hasOwn(body, 'consomeVegetais')) payload.consomeVegetais = toBoolean(body.consomeVegetais, true);
+  if (hasOwn(body, 'dificuldadeCaminhar')) payload.dificuldadeCaminhar = toBoolean(body.dificuldadeCaminhar, false);
   if (hasOwn(body, 'diabetes')) payload.diabetes = toBoolean(body.diabetes, false);
   if (hasOwn(body, 'consumoAlcoolDoses')) payload.consumoAlcoolDoses = toInt(body.consumoAlcoolDoses, 0);
   if (hasOwn(body, 'estadoGeralSaude')) payload.estadoGeralSaude = body.estadoGeralSaude;

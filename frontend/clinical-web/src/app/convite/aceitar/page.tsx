@@ -9,6 +9,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { maskCpf } from '@/utils/masks';
 import styles from '@/styles/auth-form.module.scss';
 
+const toDateInputValue = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
+};
+
 export default function AceitarConvitePage() {
   const router = useRouter();
   const params = useSearchParams();
@@ -81,7 +94,12 @@ export default function AceitarConvitePage() {
         setRole(invite.role);
         setEmail(invite.email);
         if (invite.role === 'PATIENT') {
-          setForm((prev) => ({ ...prev, cpf: invite.cpf ?? '' }));
+          setForm((prev) => ({
+            ...prev,
+            cpf: invite.cpf ?? '',
+            dataNascimento: toDateInputValue(invite.dataNascimento),
+            sexo: invite.sexo ?? prev.sexo,
+          }));
         }
       } catch (err) {
         setInviteError(err instanceof Error ? err.message : 'Falha ao validar convite.');

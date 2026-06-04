@@ -47,8 +47,13 @@ function mapPatientProfile(profile, user) {
     pressaoDiastolica: profile.pressaoDiastolica,
     glicemiaMgDl: profile.glicemiaMgDl,
     fumante: profile.fumante,
+    colesterolAlto: profile.colesterolAlto,
     atividadeFisica: profile.atividadeFisica,
     historicoAvc: profile.historicoAvc,
+    doencaCardiaca: profile.doencaCardiaca,
+    consomeFrutas: profile.consomeFrutas,
+    consomeVegetais: profile.consomeVegetais,
+    dificuldadeCaminhar: profile.dificuldadeCaminhar,
     diabetes: profile.diabetes,
     consumoAlcoolDoses: profile.consumoAlcoolDoses,
     estadoGeralSaude: profile.estadoGeralSaude,
@@ -77,8 +82,13 @@ function buildPatientPayload(body) {
     pressaoDiastolica: toInt(body.pressaoDiastolica, 80),
     glicemiaMgDl: toNumber(body.glicemiaMgDl, 96),
     fumante: toBoolean(body.fumante, false),
+    colesterolAlto: toBoolean(body.colesterolAlto, false),
     atividadeFisica: toBoolean(body.atividadeFisica, true),
     historicoAvc: toBoolean(body.historicoAvc, false),
+    doencaCardiaca: toBoolean(body.doencaCardiaca, false),
+    consomeFrutas: toBoolean(body.consomeFrutas, true),
+    consomeVegetais: toBoolean(body.consomeVegetais, true),
+    dificuldadeCaminhar: toBoolean(body.dificuldadeCaminhar, false),
     diabetes: toBoolean(body.diabetes, false),
     consumoAlcoolDoses: toInt(body.consumoAlcoolDoses, 0),
     estadoGeralSaude: body.estadoGeralSaude || 'BOM',
@@ -86,6 +96,53 @@ function buildPatientPayload(body) {
   };
 
   return base;
+}
+
+function hasOwn(body, field) {
+  return Object.prototype.hasOwnProperty.call(body, field);
+}
+
+function parseOptionalDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function buildPatientPartialPayload(body) {
+  const payload = {};
+
+  if (hasOwn(body, 'cpf')) payload.cpf = String(body.cpf || '').trim();
+  if (hasOwn(body, 'dataNascimento')) payload.dataNascimento = parseOptionalDate(body.dataNascimento);
+  if (hasOwn(body, 'sexo')) payload.sexo = body.sexo;
+  if (hasOwn(body, 'telefone')) payload.telefone = String(body.telefone || '').trim();
+  if (hasOwn(body, 'alturaCm')) payload.alturaCm = toNumber(body.alturaCm, 170);
+  if (hasOwn(body, 'pesoKg')) payload.pesoKg = toNumber(body.pesoKg, 70);
+  if (hasOwn(body, 'imc')) payload.imc = toNumber(body.imc, 24.2);
+  if (!hasOwn(body, 'imc') && hasOwn(body, 'alturaCm') && hasOwn(body, 'pesoKg')) {
+    const alturaCm = toNumber(body.alturaCm, 170);
+    const pesoKg = toNumber(body.pesoKg, 70);
+    payload.imc = Number((pesoKg / Math.pow(alturaCm / 100, 2)).toFixed(1));
+  }
+  if (hasOwn(body, 'pressaoSistolica')) payload.pressaoSistolica = toInt(body.pressaoSistolica, 120);
+  if (hasOwn(body, 'pressaoDiastolica')) payload.pressaoDiastolica = toInt(body.pressaoDiastolica, 80);
+  if (hasOwn(body, 'glicemiaMgDl')) payload.glicemiaMgDl = toNumber(body.glicemiaMgDl, 96);
+  if (hasOwn(body, 'fumante')) payload.fumante = toBoolean(body.fumante, false);
+  if (hasOwn(body, 'colesterolAlto')) payload.colesterolAlto = toBoolean(body.colesterolAlto, false);
+  if (hasOwn(body, 'atividadeFisica')) payload.atividadeFisica = toBoolean(body.atividadeFisica, true);
+  if (hasOwn(body, 'historicoAvc')) payload.historicoAvc = toBoolean(body.historicoAvc, false);
+  if (hasOwn(body, 'doencaCardiaca')) payload.doencaCardiaca = toBoolean(body.doencaCardiaca, false);
+  if (hasOwn(body, 'consomeFrutas')) payload.consomeFrutas = toBoolean(body.consomeFrutas, true);
+  if (hasOwn(body, 'consomeVegetais')) payload.consomeVegetais = toBoolean(body.consomeVegetais, true);
+  if (hasOwn(body, 'dificuldadeCaminhar')) payload.dificuldadeCaminhar = toBoolean(body.dificuldadeCaminhar, false);
+  if (hasOwn(body, 'diabetes')) payload.diabetes = toBoolean(body.diabetes, false);
+  if (hasOwn(body, 'consumoAlcoolDoses')) payload.consumoAlcoolDoses = toInt(body.consumoAlcoolDoses, 0);
+  if (hasOwn(body, 'estadoGeralSaude')) payload.estadoGeralSaude = body.estadoGeralSaude;
+  if (hasOwn(body, 'status')) payload.status = body.status;
+
+  return payload;
 }
 
 async function createInvite({ role, email, invitedById, invitedUserId, metadata }) {
@@ -285,6 +342,8 @@ exports.validateInvite = async (req, res) => {
       role: invite.role,
       email: invite.email,
       cpf: invite.invitedUser?.patientProfile?.cpf ?? null,
+      dataNascimento: invite.invitedUser?.patientProfile?.dataNascimento ?? null,
+      sexo: invite.invitedUser?.patientProfile?.sexo ?? null,
       expiresAt: invite.expiresAt,
     });
   } catch (error) {
@@ -345,15 +404,14 @@ exports.acceptInvite = async (req, res) => {
     }
 
     if (invite.role === 'PATIENT') {
-      const patientUpdate = buildPatientPayload(req.body);
-      const nextCpf = String(req.body.cpf || '').trim();
-      await prisma.patientProfile.update({
-        where: { userId: updatedUser.id },
-        data: {
-          ...patientUpdate,
-          ...(nextCpf ? { cpf: nextCpf } : {}),
-        },
-      });
+      const patientUpdate = buildPatientPartialPayload(req.body);
+
+      if (Object.keys(patientUpdate).length > 0) {
+        await prisma.patientProfile.update({
+          where: { userId: updatedUser.id },
+          data: patientUpdate,
+        });
+      }
     }
 
     await prisma.inviteToken.update({
@@ -431,4 +489,3 @@ exports.openAppInvite = async (req, res) => {
 
   return res.setHeader('Content-Type', 'text/html; charset=utf-8').send(html);
 };
-

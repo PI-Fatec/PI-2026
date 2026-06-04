@@ -7,6 +7,23 @@ import { AuthBottomSheet } from '@/components/auth/auth-bottom-sheet';
 import { AuthTextInput } from '@/components/auth/auth-text-input';
 import { useSession } from '@/providers/session-provider';
 
+type SexOption = 'Masculino' | 'Feminino' | 'Outro';
+
+const sexOptions: SexOption[] = ['Masculino', 'Feminino', 'Outro'];
+
+const toDateInputValue = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
+};
+
 export default function InviteScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ token?: string }>();
@@ -21,6 +38,8 @@ export default function InviteScreen() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [cpf, setCpf] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
+  const [sexo, setSexo] = useState<SexOption>('Outro');
   const [crm, setCrm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,6 +61,9 @@ export default function InviteScreen() {
         }
         setRole(response.role);
         setEmail(response.email);
+        setCpf(response.cpf ?? '');
+        setDataNascimento(toDateInputValue(response.dataNascimento));
+        setSexo(response.sexo ?? 'Outro');
       } catch (error) {
         Alert.alert('Convite inválido', error instanceof Error ? error.message : 'Não foi possível validar convite.');
         router.replace('/auth');
@@ -77,7 +99,7 @@ export default function InviteScreen() {
         email,
         name: name.trim(),
         password,
-        ...(role === 'PATIENT' ? { cpf: cpf.trim() } : { crm: crm.trim() }),
+        ...(role === 'PATIENT' ? { cpf: cpf.trim(), dataNascimento, sexo } : { crm: crm.trim() }),
       });
       router.replace('/main');
     } catch (error) {
@@ -101,7 +123,30 @@ export default function InviteScreen() {
                 <AuthTextInput value={name} onChangeText={setName} placeholder="Nome" />
                 <AuthTextInput value={password} onChangeText={setPassword} placeholder="Senha" secureTextEntry autoCapitalize="none" />
                 {role === 'PATIENT' ? (
-                  <AuthTextInput value={cpf} onChangeText={setCpf} placeholder="CPF" autoCapitalize="none" />
+                  <>
+                    <AuthTextInput value={cpf} onChangeText={setCpf} placeholder="CPF" autoCapitalize="none" />
+                    <AuthTextInput value={dataNascimento} onChangeText={setDataNascimento} placeholder="Nascimento" keyboardType="numeric" />
+                    <View>
+                      <Text className="mb-2 text-xs font-semibold uppercase tracking-[1px] text-[#64748B]">Sexo</Text>
+                      <View className="flex-row gap-2">
+                        {sexOptions.map((option) => {
+                          const active = sexo === option;
+                          return (
+                            <Pressable
+                              key={option}
+                              onPress={() => setSexo(option)}
+                              className={`flex-1 items-center rounded-2xl border py-3 ${
+                                active ? 'border-[#2D8DE8] bg-[#E0F2FE]' : 'border-[#CBD5E1] bg-white'
+                              }`}>
+                              <Text className={`text-sm font-semibold ${active ? 'text-[#075985]' : 'text-[#475569]'}`}>
+                                {option}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  </>
                 ) : (
                   <AuthTextInput value={crm} onChangeText={setCrm} placeholder="CRM" autoCapitalize="characters" />
                 )}

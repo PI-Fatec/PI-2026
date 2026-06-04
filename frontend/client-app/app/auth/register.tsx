@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { AuthBackground } from '@/components/auth/auth-background';
 import { AuthBottomSheet } from '@/components/auth/auth-bottom-sheet';
@@ -187,20 +187,23 @@ export default function RegisterScreen() {
               />
             </View>
 
-            <Pressable
+            <TouchableOpacity
               onPress={handleSubmit}
               disabled={isSubmitting}
+              activeOpacity={0.82}
               className={`mt-6 h-12 items-center justify-center rounded-full ${
                 isSubmitting ? 'bg-[#93C5FD]' : 'bg-[#2D8DE8]'
               }`}>
               <Text className="text-lg font-semibold text-white">
                 {isSubmitting ? 'Criando conta...' : 'Criar conta'}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
 
-            <Pressable onPress={() => router.replace('/auth/login')} className="mt-4">
-              <Text className="text-center text-sm font-semibold text-[#0F3D8C]">Já tenho conta</Text>
-            </Pressable>
+            <Link href="/auth/login" asChild>
+              <Pressable className="mt-4">
+                <Text className="text-center text-sm font-semibold text-[#0F3D8C]">Já tenho conta</Text>
+              </Pressable>
+            </Link>
           </ScrollView>
         </AuthBottomSheet>
       </View>

@@ -221,9 +221,13 @@ export default function GerenciamentoPacientesPage() {
         consumoAlcoolDoses: sheetPatient.consumoAlcoolDoses,
         estadoGeralSaude: sheetPatient.estadoGeralSaude,
         fumante: sheetPatient.fumante,
+        colesterolAlto: sheetPatient.colesterolAlto,
         atividadeFisica: sheetPatient.atividadeFisica,
         historicoAvc: sheetPatient.historicoAvc,
-        diabetes: sheetPatient.diabetes,
+        doencaCardiaca: sheetPatient.doencaCardiaca,
+        consomeFrutas: sheetPatient.consomeFrutas,
+        consomeVegetais: sheetPatient.consomeVegetais,
+        dificuldadeCaminhar: sheetPatient.dificuldadeCaminhar,
         glicemiaMgDl: sheetPatient.glicemiaMgDl,
         pressaoSistolica: sheetPatient.pressaoSistolica,
         pressaoDiastolica: sheetPatient.pressaoDiastolica,
@@ -474,7 +478,9 @@ export default function GerenciamentoPacientesPage() {
             <p><strong>Idade:</strong> {getPatientAge(sheetPatient.dataNascimento)} anos</p>
             <p><strong>Risco:</strong> {sheetPatient.risco} ({Math.round(sheetPatient.probabilidadeRisco * 100)}%)</p>
             <p><strong>Biometria:</strong> IMC {sheetPatient.imc} | PA {sheetPatient.pressaoSistolica}/{sheetPatient.pressaoDiastolica}</p>
-            <p><strong>Preditores:</strong> Fumante {sheetPatient.fumante ? 'Sim' : 'Nao'} | Diabetes {sheetPatient.diabetes ? 'Sim' : 'Nao'}</p>
+            <p><strong>Preditores:</strong> Fumante {sheetPatient.fumante ? 'Sim' : 'Nao'} | Colesterol alto {sheetPatient.colesterolAlto ? 'Sim' : 'Nao'}</p>
+            <p><strong>Hábitos:</strong> Frutas {sheetPatient.consomeFrutas ? 'Sim' : 'Nao'} | Vegetais {sheetPatient.consomeVegetais ? 'Sim' : 'Nao'}</p>
+            <p><strong>Histórico:</strong> AVC {sheetPatient.historicoAvc ? 'Sim' : 'Nao'} | Doença cardíaca {sheetPatient.doencaCardiaca ? 'Sim' : 'Nao'} | Dificuldade caminhar {sheetPatient.dificuldadeCaminhar ? 'Sim' : 'Nao'}</p>
             <p><strong>Estado geral:</strong> {sheetPatient.estadoGeralSaude}</p>
           </div>
         )}
@@ -583,6 +589,16 @@ export default function GerenciamentoPacientesPage() {
             />
 
             <Select
+              label="Colesterol alto"
+              value={sheetPatient.colesterolAlto ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('colesterolAlto', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
+
+            <Select
               label="Atividade fisica"
               value={sheetPatient.atividadeFisica ? 'SIM' : 'NAO'}
               onChange={(event) => updateEditField('atividadeFisica', event.target.value === 'SIM')}
@@ -603,9 +619,39 @@ export default function GerenciamentoPacientesPage() {
             />
 
             <Select
-              label="Diabetes"
-              value={sheetPatient.diabetes ? 'SIM' : 'NAO'}
-              onChange={(event) => updateEditField('diabetes', event.target.value === 'SIM')}
+              label="Doenca cardiaca"
+              value={sheetPatient.doencaCardiaca ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('doencaCardiaca', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
+
+            <Select
+              label="Consome frutas"
+              value={sheetPatient.consomeFrutas ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('consomeFrutas', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
+
+            <Select
+              label="Consome vegetais"
+              value={sheetPatient.consomeVegetais ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('consomeVegetais', event.target.value === 'SIM')}
+              options={[
+                { value: 'SIM', label: 'Sim' },
+                { value: 'NAO', label: 'Nao' },
+              ]}
+            />
+
+            <Select
+              label="Dificuldade caminhar"
+              value={sheetPatient.dificuldadeCaminhar ? 'SIM' : 'NAO'}
+              onChange={(event) => updateEditField('dificuldadeCaminhar', event.target.value === 'SIM')}
               options={[
                 { value: 'SIM', label: 'Sim' },
                 { value: 'NAO', label: 'Nao' },
