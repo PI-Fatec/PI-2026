@@ -110,9 +110,7 @@ function RiskProfileBars({ profile }: { profile: Record<string, unknown> }) {
                 />
               </View>
 
-              <Text className="w-10 text-right text-sm font-bold text-[#111827]">
-                {item.value}%
-              </Text>
+            
             </View>
           </View>
         );
