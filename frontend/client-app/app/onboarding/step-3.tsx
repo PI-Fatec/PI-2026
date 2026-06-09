@@ -38,8 +38,8 @@ export default function OnboardingStepThreeScreen() {
     <OnboardingStepScreen
       currentStep={3}
       image={require('@/assets/images/onbording/image2.png')}
-      title="Título lorem"
-      description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text"
+      title="Healtrack AI"
+      description="Prepare-se para uma nova forma de acompanhar sua saúde com o Healtrack AI."
       buttonLabel="Começar"
       onButtonPress={() => {
         void handleFinishOnboarding();

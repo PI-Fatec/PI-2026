@@ -9,8 +9,8 @@ export default function OnboardingStepTwoScreen() {
     <OnboardingStepScreen
       currentStep={2}
       image={require('@/assets/images/onbording/image 1.png')}
-      title="Título lorem"
-      description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text"
+      title="Healtrack AI"
+      description="Descubra como o Healtrack AI pode transformar a forma como você acompanha sua saúde."
       buttonLabel="Continuar"
       onButtonPress={() => router.push('/onboarding/step-3')}
     />
